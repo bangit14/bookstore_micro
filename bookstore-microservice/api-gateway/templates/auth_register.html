@@ -1,0 +1,46 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid" style="max-width: 700px; margin: 24px auto 0">
+  <article class="card">
+    <h2>Register</h2>
+    <form method="post" class="grid two">
+      {% csrf_token %}
+      <div>
+        <label for="register-username">Username</label>
+        <input id="register-username" type="text" name="username" required />
+      </div>
+      <div>
+        <label for="register-email">Email</label>
+        <input id="register-email" type="email" name="email" required />
+      </div>
+      <div>
+        <label for="register-name">Full Name</label>
+        <input id="register-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="register-role">Role</label>
+        <select id="register-role" name="role">
+          <option value="customer">customer</option>
+          <option value="staff">staff</option>
+          <option value="manager">manager</option>
+        </select>
+      </div>
+      <div style="grid-column: 1 / -1">
+        <label for="register-password">Password</label>
+        <input
+          id="register-password"
+          type="password"
+          name="password"
+          minlength="6"
+          required
+        />
+      </div>
+      <div style="grid-column: 1 / -1">
+        <button type="submit">Create Account</button>
+      </div>
+    </form>
+    <p class="hint" style="margin-top: 10px">
+      Already registered? <a href="/login/">Back to login</a>.
+    </p>
+  </article>
+</section>
+{% endblock %}

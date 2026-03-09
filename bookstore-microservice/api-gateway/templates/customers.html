@@ -1,0 +1,45 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Create Customer</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="customer-name">Name</label>
+        <input id="customer-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="customer-email">Email</label>
+        <input id="customer-email" type="email" name="email" required />
+      </div>
+      <button type="submit">Create</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>Customer Directory</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.email }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">No customers found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

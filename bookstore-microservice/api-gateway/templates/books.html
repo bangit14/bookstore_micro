@@ -1,0 +1,75 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Catalog</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Price</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td>{{ book.id }}</td>
+          <td>{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td>{{ book.price }}</td>
+          <td>{{ book.stock }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">No books found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Create Book</h2>
+    {% if can_create %}
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="book-title">Title</label>
+        <input id="book-title" type="text" name="title" required />
+      </div>
+      <div>
+        <label for="book-author">Author</label>
+        <input id="book-author" type="text" name="author" required />
+      </div>
+      <div>
+        <label for="book-price">Price</label>
+        <input
+          id="book-price"
+          type="number"
+          name="price"
+          step="0.01"
+          min="0"
+          required
+        />
+      </div>
+      <div>
+        <label for="book-stock">Stock</label>
+        <input
+          id="book-stock"
+          type="number"
+          name="stock"
+          min="0"
+          value="0"
+          required
+        />
+      </div>
+      <button type="submit">Create Book</button>
+    </form>
+    {% else %}
+    <p>Only <code>manager</code> and <code>staff</code> can create books.</p>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}

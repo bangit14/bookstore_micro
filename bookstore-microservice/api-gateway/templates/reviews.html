@@ -1,0 +1,76 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Review Feed</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Product</th>
+          <th>Rating</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rv in reviews %}
+        <tr>
+          <td>{{ rv.id }}</td>
+          <td>{{ rv.customer_id }}</td>
+          <td>{{ rv.product_id }}</td>
+          <td>{{ rv.rating }}</td>
+          <td>{{ rv.comment }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">No reviews yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Write Review</h2>
+    <form method="post" class="stack">
+      {% csrf_token %} {% if session_user.role != "customer" %}
+      <div>
+        <label for="review-customer-id">Customer ID</label>
+        <input
+          id="review-customer-id"
+          type="number"
+          name="customer_id"
+          required
+        />
+      </div>
+      {% endif %}
+      <div>
+        <label for="review-product-id">Product ID</label>
+        <input
+          id="review-product-id"
+          type="number"
+          name="product_id"
+          required
+        />
+      </div>
+      <div>
+        <label for="review-rating">Rating</label>
+        <input
+          id="review-rating"
+          type="number"
+          name="rating"
+          min="1"
+          max="5"
+          value="5"
+          required
+        />
+      </div>
+      <div>
+        <label for="review-comment">Comment</label>
+        <input id="review-comment" type="text" name="comment" required />
+      </div>
+      <button type="submit">Submit Review</button>
+    </form>
+  </article>
+</section>
+{% endblock %}

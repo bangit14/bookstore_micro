@@ -1,0 +1,112 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Open Cart</h2>
+    <form method="get" class="stack" action="/cart/">
+      <div>
+        <label for="cart-customer-id-view">Customer ID</label>
+        {% if session_user.role == "customer" %}
+        <input
+          id="cart-customer-id-view"
+          type="number"
+          value="{{ session_user.customer_id }}"
+          disabled
+        />
+        {% else %}
+        <input
+          id="cart-customer-id-query"
+          type="number"
+          name="customer_id"
+          value="{{ selected_customer_id }}"
+          required
+        />
+        {% endif %}
+      </div>
+      <button type="submit" class="secondary">Load Cart</button>
+    </form>
+
+    {% if can_create_cart %}
+    <hr style="border: none; border-top: 1px solid #e6ddd1; margin: 16px 0" />
+    <h3>Create Cart</h3>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_cart" />
+      <div>
+        <label for="create-cart-customer-id">Customer ID</label>
+        <input
+          id="create-cart-customer-id"
+          type="number"
+          name="customer_id"
+          required
+        />
+      </div>
+      <button type="submit">Create Cart</button>
+    </form>
+    {% endif %}
+
+    <hr style="border: none; border-top: 1px solid #e6ddd1; margin: 16px 0" />
+    <h3>Add Item To Cart</h3>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_item" />
+      <div>
+        <label for="add-item-cart-id">Cart ID</label>
+        <input id="add-item-cart-id" type="number" name="cart" required />
+      </div>
+      <div>
+        <label for="add-item-book-id">Book</label>
+        <select id="add-item-book-id" name="book_id" required>
+          {% for b in books %}
+          <option value="{{ b.id }}">#{{ b.id }} - {{ b.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="add-item-quantity">Quantity</label>
+        <input
+          id="add-item-quantity"
+          type="number"
+          name="quantity"
+          min="1"
+          value="1"
+          required
+        />
+      </div>
+      <button type="submit">Add Item</button>
+    </form>
+    <p class="hint" style="margin-top: 10px">
+      Note: input requires cart ID because cart-service add endpoint receives
+      <code>cart</code>.
+    </p>
+  </article>
+
+  <article class="card">
+    <h2>Cart Items</h2>
+    <p class="hint">Customer ID: {{ selected_customer_id|default:"N/A" }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cart</th>
+          <th>Book</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cart_items %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.cart }}</td>
+          <td>{{ item.book_id }}</td>
+          <td>{{ item.quantity }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No cart items.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

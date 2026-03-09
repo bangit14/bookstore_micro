@@ -1,0 +1,137 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Create Order</h2>
+    <form method="post" class="stack">
+      {% csrf_token %} {% if session_user.role != "customer" %}
+      <div>
+        <label for="order-customer-id">Customer ID</label>
+        <input
+          id="order-customer-id"
+          type="number"
+          name="customer_id"
+          required
+        />
+      </div>
+      {% endif %}
+      <div>
+        <label for="order-shipping-address">Shipping Address</label>
+        <input
+          id="order-shipping-address"
+          type="text"
+          name="shipping_address"
+          required
+        />
+      </div>
+      <div>
+        <label for="order-status">Status</label>
+        <select id="order-status" name="status">
+          <option value="pending">pending</option>
+          <option value="created">created</option>
+          <option value="processing">processing</option>
+        </select>
+      </div>
+      <div>
+        <label for="order-total-amount">Total Amount</label>
+        <input
+          id="order-total-amount"
+          type="number"
+          min="0"
+          step="0.01"
+          name="total_amount"
+          required
+        />
+      </div>
+      <button type="submit">Create Order</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>Order List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>{{ o.id }}</td>
+          <td>{{ o.customer_id }}</td>
+          <td>{{ o.status }}</td>
+          <td>{{ o.total_amount }}</td>
+          <td><a href="/orders/?order_id={{ o.id }}">View payment/ship</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">No orders found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<section class="grid two" style="margin-top: 16px">
+  <article class="card">
+    <h2>Payments Of Order #{{ selected_order_id|default:"N/A" }}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Transaction</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.amount }}</td>
+          <td>{{ p.status }}</td>
+          <td>{{ p.transaction_id }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No payment records.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Shipments Of Order #{{ selected_order_id|default:"N/A" }}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Address</th>
+          <th>Status</th>
+          <th>Tracking</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in shipments %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.shipping_address }}</td>
+          <td>{{ s.status }}</td>
+          <td>{{ s.tracking_code }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No shipment records.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

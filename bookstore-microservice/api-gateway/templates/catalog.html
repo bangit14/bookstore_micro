@@ -1,0 +1,82 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Catalog Products</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.price }}</td>
+          <td>{{ p.stock }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No products found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Create Catalog Product</h2>
+    {% if can_create %}
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="catalog-name">Name</label>
+        <input id="catalog-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="catalog-description">Description</label>
+        <input
+          id="catalog-description"
+          type="text"
+          name="description"
+          required
+        />
+      </div>
+      <div>
+        <label for="catalog-price">Price</label>
+        <input
+          id="catalog-price"
+          type="number"
+          name="price"
+          min="0"
+          step="0.01"
+          required
+        />
+      </div>
+      <div>
+        <label for="catalog-stock">Stock</label>
+        <input
+          id="catalog-stock"
+          type="number"
+          name="stock"
+          min="0"
+          value="0"
+          required
+        />
+      </div>
+      <div>
+        <label for="catalog-image-url">Image URL</label>
+        <input id="catalog-image-url" type="text" name="image_url" />
+      </div>
+      <button type="submit">Create Product</button>
+    </form>
+    {% else %}
+    <p>Only <code>manager</code> and <code>staff</code> can create products.</p>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}

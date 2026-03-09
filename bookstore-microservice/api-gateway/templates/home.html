@@ -1,0 +1,100 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Welcome, {{ session_user.username }}</h2>
+    <p>
+      You are signed in with role
+      <span class="pill">{{ session_user.role }}</span>.
+    </p>
+    <p class="hint">
+      Customer ID: {{ session_user.customer_id|default:"N/A" }}
+    </p>
+  </article>
+
+  <article class="card">
+    <h2>Quick Actions</h2>
+    <div class="grid two">
+      <a
+        class="card"
+        href="/books/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Book Service</h3>
+        <p>Browse books and create books (manager/staff).</p>
+      </a>
+      <a
+        class="card"
+        href="/cart/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Cart Service</h3>
+        <p>Add item to cart and inspect cart by customer.</p>
+      </a>
+      <a
+        class="card"
+        href="/customers/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Customer Service</h3>
+        <p>View all customers and create customer profiles.</p>
+      </a>
+      <a
+        class="card"
+        href="/catalog/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Catalog Service</h3>
+        <p>Manage product catalog for commerce and inventory.</p>
+      </a>
+      <a
+        class="card"
+        href="/orders/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Order/Pay/Ship</h3>
+        <p>Create orders and inspect payment/shipping details.</p>
+      </a>
+      <a
+        class="card"
+        href="/reviews/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Comment-Rate Service</h3>
+        <p>Submit product reviews and monitor feedback stream.</p>
+      </a>
+      <a
+        class="card"
+        href="/recommender/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Recommender AI</h3>
+        <p>Fetch recommendations based on behavior and ratings.</p>
+      </a>
+      <a
+        class="card"
+        href="/staff/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Staff Service</h3>
+        <p>Manage employee records used in operations.</p>
+      </a>
+      <a
+        class="card"
+        href="/manager-dashboard/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Manager Service</h3>
+        <p>Cross-service metrics and executive operational view.</p>
+      </a>
+      <a
+        class="card"
+        href="/health/"
+        style="text-decoration: none; color: inherit"
+      >
+        <h3>Health</h3>
+        <p>Basic gateway health endpoint check.</p>
+      </a>
+    </div>
+  </article>
+</section>
+{% endblock %}

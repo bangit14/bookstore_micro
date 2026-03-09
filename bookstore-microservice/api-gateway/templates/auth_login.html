@@ -1,0 +1,22 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid" style="max-width: 560px; margin: 32px auto 0">
+  <article class="card">
+    <h2>Login</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="login-username">Username</label>
+        <input id="login-username" type="text" name="username" required />
+      </div>
+      <div>
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" name="password" required />
+      </div>
+      <button type="submit">Sign In</button>
+    </form>
+    <p class="hint" style="margin-top: 10px">
+      No account? <a href="/register/">Create one here</a>.
+    </p>
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block content %}
+<section class="card">
+  <h2>Manager Dashboard</h2>
+  <p class="hint">Aggregated metrics from all operational services.</p>
+  <div class="grid three" style="margin-top: 12px">
+    <article class="card">
+      <h3>Staff</h3>
+      <p class="pill">{{ stats.staff_count|default:0 }}</p>
+    </article>
+    <article class="card">
+      <h3>Orders</h3>
+      <p class="pill">{{ stats.order_count|default:0 }}</p>
+    </article>
+    <article class="card">
+      <h3>Payments</h3>
+      <p class="pill">{{ stats.payment_count|default:0 }}</p>
+    </article>
+    <article class="card">
+      <h3>Shipments</h3>
+      <p class="pill">{{ stats.shipment_count|default:0 }}</p>
+    </article>
+    <article class="card">
+      <h3>Catalog</h3>
+      <p class="pill">{{ stats.catalog_product_count|default:0 }}</p>
+    </article>
+    <article class="card">
+      <h3>Reviews</h3>
+      <p class="pill">{{ stats.review_count|default:0 }}</p>
+    </article>
+  </div>
+</section>
+{% endblock %}

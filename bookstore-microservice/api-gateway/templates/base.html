@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BookStore Control Panel</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600&display=swap");
+
+      :root {
+        --bg: #f7f4ef;
+        --ink: #1f262b;
+        --brand: #006d77;
+        --brand-2: #83c5be;
+        --card: #fffdf8;
+        --warn: #b45309;
+        --ok: #0f766e;
+        --danger: #b91c1c;
+        --line: #e6ddd1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(
+            circle at 85% 12%,
+            rgba(131, 197, 190, 0.28),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at 10% 90%,
+            rgba(0, 109, 119, 0.15),
+            transparent 40%
+          ),
+          var(--bg);
+      }
+
+      .shell {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+
+      .brand {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 30px;
+        margin: 0;
+      }
+
+      .brand small {
+        display: block;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #53757a;
+      }
+
+      .nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .nav a {
+        text-decoration: none;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #fff;
+        font-size: 14px;
+      }
+
+      .nav a:hover {
+        border-color: var(--brand);
+        transform: translateY(-1px);
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(31, 38, 43, 0.06);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 24px;
+      }
+
+      h3 {
+        margin: 0 0 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 6px;
+        color: #51656a;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 10px 12px;
+        font-family: inherit;
+      }
+
+      button {
+        background: linear-gradient(135deg, #004f56, #0c6d76);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      button.secondary {
+        background: white;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .msg {
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .msg.success {
+        background: #ecfeff;
+        color: var(--ok);
+      }
+
+      .msg.warning {
+        background: #fff7ed;
+        color: var(--warn);
+      }
+
+      .msg.error {
+        background: #fef2f2;
+        color: var(--danger);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid #edf1f3;
+        padding: 10px;
+        text-align: left;
+        font-size: 14px;
+      }
+
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #5f7378;
+        background: #f7fbfc;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: #5f7378;
+      }
+
+      .pill {
+        display: inline-block;
+        background: #e6fffa;
+        color: #0f766e;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+
+      @media (max-width: 900px) {
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <h1 class="brand">
+          BookStore Mesh
+          <small>Microservice Web Console</small>
+        </h1>
+        <nav class="nav">
+          <a href="/">Dashboard</a>
+          <a href="/books/">Books</a>
+          <a href="/catalog/">Catalog</a>
+          <a href="/cart/">Cart</a>
+          <a href="/orders/">Orders</a>
+          <a href="/reviews/">Reviews</a>
+          <a href="/customers/">Customers</a>
+          <a href="/staff/">Staff</a>
+          <a href="/recommender/">AI Recommender</a>
+          <a href="/manager-dashboard/">Manager</a>
+          {% if session_user and session_user.is_authenticated %}
+          <a href="/logout/">Logout</a>
+          {% else %}
+          <a href="/login/">Login</a>
+          <a href="/register/">Register</a>
+          {% endif %}
+        </nav>
+      </header>
+
+      {% if messages %} {% for message in messages %}
+      <div
+        class="msg {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}warning{% endif %}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

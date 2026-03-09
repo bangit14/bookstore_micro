@@ -1,0 +1,245 @@
+Tổng Quan Hệ Thống – BookStore Microservice
+1. Tổng quan hệ thống
+Hệ thống trong bài tập được xây dựng theo kiến trúc Microservice cho ứng dụng BookStore (cửa hàng sách). Thay vì xây dựng toàn bộ hệ thống dưới dạng một ứng dụng đơn khối (monolithic), hệ thống được chia thành nhiều dịch vụ nhỏ độc lập. Mỗi dịch vụ đảm nhiệm một chức năng riêng và giao tiếp với nhau thông qua REST API. Kiến trúc này giúp hệ thống dễ mở rộng, dễ bảo trì và cho phép các dịch vụ được phát triển độc lập.
+2. Các thành phần chính của hệ thống
+Hệ thống bao gồm các dịch vụ chính sau:
+- Staff-service: Quản lý thông tin nhân viên của hệ thống. Service này xử lý việc tạo, cập nhật và truy xuất dữ liệu nhân viên, phân quyền nhân viên và hỗ trợ các thao tác quản trị trong hệ thống.
+- manager-service: Quản lý các chức năng ở cấp quản lý như quản lý nhân viên, giám sát hoạt động hệ thống, xem báo cáo doanh thu, quản lý đơn hàng và quản lý danh mục sản phẩm.
+- catalog-service: Quản lý danh mục sản phẩm (catalog). Service này xử lý việc tạo, cập nhật, xóa và hiển thị thông tin sản phẩm như tên sách, mô tả, giá, tồn kho và hình ảnh sản phẩm.
+- order-service: Quản lý đơn hàng của khách hàng. Service này tiếp nhận yêu cầu đặt hàng, tạo đơn hàng mới, cập nhật trạng thái đơn hàng và lưu thông tin chi tiết đơn hàng.
+- Ship-service: Quản lý quá trình vận chuyển đơn hàng. Service này xử lý việc tạo đơn giao hàng, theo dõi trạng thái vận chuyển (đang giao, đã giao, thất bại) và cập nhật thông tin giao hàng cho đơn hàng.
+- pay-service: Xử lý thanh toán cho đơn hàng. Service này thực hiện các chức năng như tạo giao dịch thanh toán, kết nối với hệ thống thanh toán, xác nhận thanh toán thành công hoặc thất bại.
+- comment-rate-service: Quản lý đánh giá và nhận xét của khách hàng đối với sản phẩm. Service này cho phép khách hàng gửi bình luận, đánh giá sao và xem các nhận xét của người dùng khác.
+- recommender-ai-service: Cung cấp hệ thống gợi ý sản phẩm dựa trên trí tuệ nhân tạo. Service này phân tích hành vi người dùng, lịch sử mua hàng hoặc đánh giá để đề xuất các sản phẩm phù hợp.
+- Customer Service: Quản lý thông tin khách hàng, bao gồm tạo mới và truy vấn thông tin khách hàng.
+- Book Service: Quản lý thông tin sách trong cửa hàng như thêm sách, cập nhật sách và hiển thị danh sách sách.
+- Cart Service: Quản lý giỏ hàng của khách hàng, cho phép thêm sách vào giỏ hàng và xem nội dung giỏ hàng.
+- API Gateway / Web Interface: Là điểm truy cập chính của người dùng, tiếp nhận các yêu cầu từ giao diện web và chuyển tiếp đến các microservice tương ứng.
+
+3. Chức năng chính của hệ thống
+Chức năng của manager:
+Nhóm chức năng	Mô tả
+Quản lý nhân viên	Tạo, chỉnh sửa, xóa tài khoản nhân viên
+Phân quyền hệ thống	Gán quyền cho staff và quản lý quyền truy cập
+Quản lý danh mục sản phẩm	Thêm, sửa, xóa danh mục hoặc sản phẩm
+Quản lý đơn hàng	Xem tất cả đơn hàng trong hệ thống
+Quản lý thanh toán	Theo dõi trạng thái thanh toán của các đơn
+Quản lý vận chuyển	Xem và kiểm soát trạng thái giao hàng
+Quản lý đánh giá	Kiểm duyệt hoặc xóa các comment/rating không phù hợp
+Quản lý khuyến mãi	Tạo chương trình giảm giá hoặc ưu đãi
+Thống kê và báo cáo	Xem doanh thu, số đơn hàng, sản phẩm bán chạy
+Quản lý hệ thống	Theo dõi hoạt động của các service trong hệ thống
+Chức năng của Staff:
+Nhóm chức năng	Mô tả
+Quản lý sản phẩm	Thêm, chỉnh sửa thông tin sản phẩm
+Quản lý tồn kho	Cập nhật số lượng sản phẩm
+Xử lý đơn hàng	Xác nhận đơn hàng mới
+Cập nhật trạng thái đơn	Cập nhật các trạng thái như đang xử lý
+Hỗ trợ vận chuyển	Tạo yêu cầu giao hàng
+Theo dõi giao hàng	Kiểm tra trạng thái vận chuyển
+Hỗ trợ khách hàng	Kiểm tra thông tin đơn hàng của khách
+Kiểm duyệt đánh giá	Xem và phản hồi đánh giá của khách hàng
+Chức năng của Customer:
+Nhóm chức năng	Mô tả
+Đăng ký tài khoản	Tạo tài khoản mới
+Đăng nhập / đăng xuất	Xác thực tài khoản người dùng
+Xem sản phẩm	Duyệt danh sách sản phẩm
+Tìm kiếm sản phẩm	Tìm theo tên, danh mục hoặc từ khóa
+Xem chi tiết sản phẩm	Xem thông tin chi tiết sản phẩm
+Thêm vào giỏ hàng	Thêm sản phẩm vào cart
+Quản lý giỏ hàng	Cập nhật số lượng hoặc xóa sản phẩm
+Đặt hàng	Tạo đơn hàng từ giỏ hàng
+Thanh toán	Thực hiện thanh toán đơn hàng
+Theo dõi đơn hàng	Xem trạng thái vận chuyển
+Đánh giá sản phẩm	Viết comment và rating
+Nhận gợi ý sản phẩm	Xem các sản phẩm đề xuất từ AI
+Quản lý tài khoản	Cập nhật thông tin cá nhân
+
+4. Luồng hoạt động của hệ thống
+Luồng tạo khách hàng:
+1. Người dùng gửi yêu cầu tạo khách hàng từ giao diện web.
+2. Yêu cầu được gửi đến API Gateway.
+3. API Gateway chuyển tiếp yêu cầu đến Customer Service.
+4. Customer Service xử lý và lưu dữ liệu khách hàng vào cơ sở dữ liệu.
+5. Kết quả được trả về API Gateway và hiển thị cho người dùng.
+
+Luồng thêm sản phẩm vào giỏ hàng:
+1. Khách hàng chọn một cuốn sách và yêu cầu thêm vào giỏ hàng.
+2. Yêu cầu được gửi đến API Gateway.
+3. API Gateway chuyển tiếp yêu cầu đến Cart Service.
+4. Cart Service liên hệ với Book Service để kiểm tra thông tin sách.
+5. Nếu sách tồn tại, hệ thống sẽ thêm sách vào giỏ hàng của khách hàng.
+6. Kết quả được trả về cho người dùng thông qua API Gateway.
+Luồng hoạt động tổng thể của hệ thống
+1.	Khách hàng xem sản phẩm thông qua catalog-service.
+2.	Khách hàng đặt mua sản phẩm → hệ thống gửi yêu cầu đến order-service.
+3.	order-service tạo đơn hàng và gửi yêu cầu thanh toán đến pay-service.
+4.	Sau khi thanh toán thành công, hệ thống chuyển đơn hàng sang ship-service để xử lý vận chuyển.
+5.	Sau khi nhận hàng, khách hàng có thể để lại đánh giá thông qua comment-rate-service.
+6.	recommender-ai-service phân tích dữ liệu mua hàng và đánh giá để gợi ý sản phẩm cho người dùng.
+7.	staff-service và manager-service được sử dụng bởi nhân viên và quản lý để quản trị hệ thống.
+
+
+1. Customer Service - models.py
+from django.db import models
+
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+
+Customer Service - serializers.py
+from rest_framework import serializers
+from .models import Customer
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+Customer Service - views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Customer
+from .serializers import CustomerSerializer
+import requests
+
+CART_SERVICE_URL = "http://cart-service:8000"
+
+class CustomerListCreate(APIView):
+
+    def get(self, request):
+        customers = Customer.objects.all()
+        serializer = CustomerSerializer(customers, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CustomerSerializer(data=request.data)
+
+        if serializer.is_valid():
+            customer = serializer.save()
+
+            requests.post(
+                f"{CART_SERVICE_URL}/carts/",
+                json={"customer_id": customer.id}
+            )
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors)
+
+Customer Service - urls.py
+from django.urls import path
+from .views import CustomerListCreate
+
+urlpatterns = [
+    path('customers/', CustomerListCreate.as_view()),
+]
+
+2. Book Service - models.py
+from django.db import models
+
+class Book(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.IntegerField()
+
+Book Service - views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Book
+from .serializers import BookSerializer
+
+class BookListCreate(APIView):
+
+    def get(self, request):
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = BookSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors)
+
+3. Cart Service - models.py
+from django.db import models
+
+class Cart(models.Model):
+    customer_id = models.IntegerField()
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    book_id = models.IntegerField()
+    quantity = models.IntegerField()
+
+Cart Service - views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Cart, CartItem
+from .serializers import CartSerializer, CartItemSerializer
+import requests
+
+BOOK_SERVICE_URL = "http://book-service:8000"
+
+Create Cart
+class CartCreate(APIView):
+
+    def post(self, request):
+        serializer = CartSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+Add Item to Cart
+class AddCartItem(APIView):
+
+    def post(self, request):
+        book_id = request.data["book_id"]
+
+        r = requests.get(f"{BOOK_SERVICE_URL}/books/")
+        books = r.json()
+
+        if not any(b["id"] == book_id for b in books):
+            return Response({"error": "Book not found"})
+
+        serializer = CartItemSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+View Cart
+class ViewCart(APIView):
+
+    def get(self, request, customer_id):
+        cart = Cart.objects.get(customer_id=customer_id)
+        items = CartItem.objects.filter(cart=cart)
+
+        serializer = CartItemSerializer(items, many=True)
+
+        return Response(serializer.data)
+
+4. API Gateway - views.py
+from django.shortcuts import render
+import requests
+
+BOOK_SERVICE_URL = "http://book-service:8000"
+
+def book_list(request):
+    r = requests.get(f"{BOOK_SERVICE_URL}/books/")
+    return render(request, "books.html", {"books": r.json()})
+5. Cấu trúc ví dụ thư mục hệ thống
+bookstore-microservice/
+│
+├── customer-service
+├── book-service
+├── cart-service
+├── api-gateway
+└── docker-compose.yml
+

@@ -1,0 +1,64 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Recommendation Query</h2>
+    <form method="get" action="/recommender/" class="stack">
+      <div>
+        {% if session_user.role == "customer" %}
+        <label for="rec-customer-id-view">Customer ID</label>
+        <input
+          id="rec-customer-id-view"
+          type="number"
+          value="{{ session_user.customer_id }}"
+          disabled
+        />
+        {% else %}
+        <label for="rec-customer-id-input">Customer ID</label>
+        <input
+          id="rec-customer-id-input"
+          type="number"
+          name="customer_id"
+          value="{{ selected_customer_id }}"
+          required
+        />
+        {% endif %}
+      </div>
+      <button type="submit">Get Recommendations</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>Recommendation Result</h2>
+    <p class="hint">Customer: {{ selected_customer_id|default:"N/A" }}</p>
+    <h3>Recommended Product IDs</h3>
+    <p>
+      {% if recommendations.recommended_product_ids %} {{
+      recommendations.recommended_product_ids }} {% else %} No ranked products
+      yet. {% endif %}
+    </p>
+    <h3>Fallback Books</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in recommendations.fallback_books %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td>{{ b.title }}</td>
+          <td>{{ b.author }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">No fallback books.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

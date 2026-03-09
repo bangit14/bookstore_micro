@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block content %}
+<section class="grid two">
+  <article class="card">
+    <h2>Staff Directory</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in staffs %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.role }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No staff found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card">
+    <h2>Create Staff</h2>
+    {% if can_create %}
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="staff-name">Name</label>
+        <input id="staff-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="staff-email">Email</label>
+        <input id="staff-email" type="email" name="email" required />
+      </div>
+      <div>
+        <label for="staff-role">Role</label>
+        <input
+          id="staff-role"
+          type="text"
+          name="role"
+          value="support"
+          required
+        />
+      </div>
+      <button type="submit">Create Staff</button>
+    </form>
+    {% else %}
+    <p>Only <code>manager</code> can create staff users.</p>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}
