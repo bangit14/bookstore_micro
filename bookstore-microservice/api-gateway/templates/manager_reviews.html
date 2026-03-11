@@ -1,0 +1,344 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Đánh Giá - BookStore
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link active" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4"><i class="bi bi-star"></i> Quản Lý Đánh Giá</h2>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <i class="bi bi-star-fill text-warning" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="averageRating">0</h4>
+            <small class="text-muted">Điểm TB</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <i class="bi bi-chat-dots text-info" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="totalReviews">0</h4>
+            <small class="text-muted">Tổng đánh giá</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <i
+              class="bi bi-hand-thumbs-up text-success"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="positiveCount">0</h4>
+            <small class="text-muted">Tích cực (≥4⭐)</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-danger">
+          <div class="card-body">
+            <i
+              class="bi bi-hand-thumbs-down text-danger"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="negativeCount">0</h4>
+            <small class="text-muted">Tiêu cực (<3⭐)</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-5">
+            <input
+              type="text"
+              class="form-control"
+              id="searchInput"
+              placeholder="Tìm kiếm đánh giá..."
+              onkeyup="searchReviews()"
+            />
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterRating"
+              onchange="filterReviews()"
+            >
+              <option value="">Tất cả đánh giá</option>
+              <option value="5">⭐⭐⭐⭐⭐ (5 sao)</option>
+              <option value="4">⭐⭐⭐⭐ (4 sao)</option>
+              <option value="3">⭐⭐⭐ (3 sao)</option>
+              <option value="2">⭐⭐ (2 sao)</option>
+              <option value="1">⭐ (1 sao)</option>
+            </select>
+          </div>
+          <div class="col-md-4 text-end">
+            <button class="btn btn-outline-primary" onclick="loadReviews()">
+              <i class="bi bi-arrow-clockwise"></i> Làm mới
+            </button>
+            <button class="btn btn-outline-danger" onclick="moderateReviews()">
+              <i class="bi bi-shield-check"></i> Kiểm duyệt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Khách Hàng</th>
+                <th>Sản Phẩm</th>
+                <th>Đánh Giá</th>
+                <th>Nội Dung</th>
+                <th>Ngày Tạo</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="reviewsTableBody">
+              <tr>
+                <td colspan="7" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          id="paginationContainer"
+          class="d-flex justify-content-center align-items-center mt-3 flex-wrap gap-2"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const PAGE_SIZE = 10;
+  let allReviews = [];
+  let filteredData = [];
+  let currentPage = 1;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadReviews();
+  });
+
+  async function loadReviews() {
+    try {
+      const res = await axios.get("/api/reviews/");
+      allReviews = res.data;
+      updateStatistics(allReviews);
+      applyFiltersAndSearch();
+    } catch (error) {
+      console.error("Error loading reviews:", error);
+      document.getElementById("reviewsTableBody").innerHTML = `
+        <tr><td colspan="7" class="text-center text-danger">Không thể tải danh sách đánh giá</td></tr>
+      `;
+    }
+  }
+
+  function applyFiltersAndSearch() {
+    const term = document
+      .getElementById("searchInput")
+      .value.toLowerCase()
+      .trim();
+    const rating = document.getElementById("filterRating").value;
+    filteredData = allReviews.filter((r) => {
+      if (
+        term &&
+        !r.id.toString().includes(term) &&
+        !(r.comment && r.comment.toLowerCase().includes(term)) &&
+        !(r.customer_id && r.customer_id.toString().includes(term))
+      )
+        return false;
+      if (rating && r.rating != rating) return false;
+      return true;
+    });
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    displayReviews(filteredData.slice(start, start + PAGE_SIZE));
+    renderPagination(filteredData.length);
+  }
+
+  function displayReviews(reviews) {
+    const tbody = document.getElementById("reviewsTableBody");
+    if (reviews.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="text-center">Không có đánh giá nào</td></tr>';
+      return;
+    }
+    let html = "";
+    reviews.forEach((review) => {
+      const stars = "⭐".repeat(review.rating || 0);
+      const ratingClass =
+        review.rating >= 4
+          ? "text-success"
+          : review.rating >= 3
+            ? "text-warning"
+            : "text-danger";
+      html += `
+        <tr>
+          <td>#${review.id}</td>
+          <td>KH #${review.customer_id || "N/A"}</td>
+          <td>SP #${review.product_id || review.book_id || "N/A"}</td>
+          <td class="${ratingClass} fw-bold">${stars} (${review.rating})</td>
+          <td>${review.comment ? review.comment.substring(0, 60) + (review.comment.length > 60 ? "..." : "") : "Không có bình luận"}</td>
+          <td>${review.created_at ? new Date(review.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="viewReviewDetail(${review.id})"><i class="bi bi-eye"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="deleteReview(${review.id})"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateStatistics(reviews) {
+    if (reviews.length === 0) {
+      [
+        "averageRating",
+        "totalReviews",
+        "positiveCount",
+        "negativeCount",
+      ].forEach((id) => (document.getElementById(id).textContent = "0"));
+      return;
+    }
+    const avgRating =
+      reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length;
+    document.getElementById("averageRating").textContent = avgRating.toFixed(1);
+    document.getElementById("totalReviews").textContent = reviews.length;
+    document.getElementById("positiveCount").textContent = reviews.filter(
+      (r) => r.rating >= 4,
+    ).length;
+    document.getElementById("negativeCount").textContent = reviews.filter(
+      (r) => r.rating < 3,
+    ).length;
+  }
+
+  function searchReviews() {
+    applyFiltersAndSearch();
+  }
+  function filterReviews() {
+    applyFiltersAndSearch();
+  }
+
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("paginationContainer");
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    let html = '<nav><ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1});return false;">‹</a></li>`;
+    let ell = false;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        ell = false;
+        html += `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" onclick="goToPage(${i});return false;">${i}</a></li>`;
+      } else if (!ell) {
+        ell = true;
+        html +=
+          '<li class="page-item disabled"><span class="page-link">…</span></li>';
+      }
+    }
+    html += `<li class="page-item ${currentPage === totalPages ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1});return false;">›</a></li>`;
+    html += `</ul></nav><small class="text-muted ms-3">Trang ${currentPage}/${totalPages} &middot; ${total} mục</small>`;
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage();
+  }
+
+  function viewReviewDetail(reviewId) {
+    const review = allReviews.find((r) => r.id === reviewId);
+    if (!review) return;
+
+    const stars = "⭐".repeat(review.rating || 0);
+    showAlert(
+      `
+      <strong>Đánh giá #${reviewId}</strong><br>
+      ${stars} (${review.rating} sao)<br>
+      <em>"${review.comment || "Không có bình luận"}"</em>
+    `,
+      "info",
+    );
+  }
+
+  async function deleteReview(reviewId) {
+    if (!confirm("Bạn có chắc muốn xóa đánh giá này?")) return;
+
+    try {
+      await axios.delete(`/api/reviews/${reviewId}/`);
+      showAlert("Đã xóa đánh giá", "success");
+      await loadReviews();
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      showAlert("Không thể xóa đánh giá", "danger");
+    }
+  }
+
+  function moderateReviews() {
+    showAlert("Tính năng kiểm duyệt đánh giá đang được phát triển", "info");
+  }
+</script>
+{% endblock %}

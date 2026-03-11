@@ -1,0 +1,501 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Đơn Hàng - BookStore
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link active" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+    </h2>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              id="searchInput"
+              placeholder="Tìm kiếm đơn hàng..."
+              onkeyup="searchOrders()"
+            />
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterStatus"
+              onchange="filterOrders()"
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="pending">Chờ xử lý</option>
+              <option value="paid">Đã thanh toán</option>
+              <option value="shipping">Đang giao</option>
+              <option value="delivered">Đã giao</option>
+              <option value="cancelled">Đã hủy</option>
+            </select>
+          </div>
+          <div class="col-md-5 text-end">
+            <div class="btn-group" role="group">
+              <button class="btn btn-outline-primary" onclick="loadOrders()">
+                <i class="bi bi-arrow-clockwise"></i> Làm mới
+              </button>
+              <button class="btn btn-outline-success" onclick="exportOrders()">
+                <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <i
+              class="bi bi-clock-history text-warning"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="pendingCount">0</h4>
+            <small class="text-muted">Chờ xử lý</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <i class="bi bi-credit-card text-info" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="paidCount">0</h4>
+            <small class="text-muted">Đã thanh toán</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <i class="bi bi-truck text-primary" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="shippingCount">0</h4>
+            <small class="text-muted">Đang giao</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <i
+              class="bi bi-check-circle text-success"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="deliveredCount">0</h4>
+            <small class="text-muted">Đã giao</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Mã ĐH</th>
+                <th>Khách Hàng</th>
+                <th>Ngày Đặt</th>
+                <th>Tổng Tiền</th>
+                <th>Trạng Thái</th>
+                <th>Thanh Toán</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr>
+                <td colspan="7" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          id="paginationContainer"
+          class="d-flex justify-content-center align-items-center mt-3 flex-wrap gap-2"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Chi Tiết Đơn Hàng #<span id="modalOrderId"></span>
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body" id="orderDetailContent">
+        <p class="text-center">Đang tải...</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Đóng
+        </button>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <label class="text-muted small mb-0">Trạng thái mới:</label>
+          <select
+            class="form-select form-select-sm"
+            id="newOrderStatus"
+            style="width: auto"
+          >
+            <option value="pending">Chờ xử lý</option>
+            <option value="created">Đã tạo</option>
+            <option value="processing">Đang xử lý</option>
+            <option value="paid">Đã thanh toán</option>
+            <option value="shipping">Đang giao</option>
+            <option value="completed">Hoàn thành</option>
+            <option value="cancelled">Đã hủy</option>
+          </select>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="updateOrderStatus()"
+          >
+            <i class="bi bi-arrow-repeat"></i> Cập Nhật
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const PAGE_SIZE = 10;
+  let allOrders = [];
+  let filteredData = [];
+  let currentPage = 1;
+  let selectedOrder = null;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadOrders();
+  });
+
+  async function loadOrders() {
+    try {
+      const res = await axios.get("/api/orders/");
+      allOrders = res.data;
+      updateStatistics(allOrders);
+      applyFiltersAndSearch();
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      document.getElementById("ordersTableBody").innerHTML = `
+        <tr><td colspan="7" class="text-center text-danger">Không thể tải danh sách đơn hàng</td></tr>
+      `;
+    }
+  }
+
+  function applyFiltersAndSearch() {
+    const term = document
+      .getElementById("searchInput")
+      .value.toLowerCase()
+      .trim();
+    const status = document.getElementById("filterStatus").value;
+    filteredData = allOrders.filter((o) => {
+      if (
+        term &&
+        !o.id.toString().includes(term) &&
+        !o.customer_id.toString().includes(term) &&
+        !(o.shipping_address && o.shipping_address.toLowerCase().includes(term))
+      )
+        return false;
+      if (status && o.status !== status) return false;
+      return true;
+    });
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    displayOrders(filteredData.slice(start, start + PAGE_SIZE));
+    renderPagination(filteredData.length);
+  }
+
+  function displayOrders(orders) {
+    const tbody = document.getElementById("ordersTableBody");
+    if (orders.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="text-center">Không có đơn hàng nào</td></tr>';
+      return;
+    }
+    let html = "";
+    orders.forEach((order) => {
+      const statusBadge =
+        {
+          pending: '<span class="badge bg-warning">Chờ xử lý</span>',
+          paid: '<span class="badge bg-info">Đã thanh toán</span>',
+          shipping: '<span class="badge bg-primary">Đang giao</span>',
+          delivered: '<span class="badge bg-success">Đã giao</span>',
+          cancelled: '<span class="badge bg-danger">Đã hủy</span>',
+        }[order.status] || '<span class="badge bg-secondary">N/A</span>';
+      const paymentBadge =
+        order.payment_status === "paid"
+          ? '<span class="badge bg-success">Đã thanh toán</span>'
+          : '<span class="badge bg-warning">Chưa thanh toán</span>';
+      html += `
+        <tr onclick="viewOrderDetail(${order.id})" style="cursor:pointer">
+          <td>#${order.id}</td>
+          <td>KH #${order.customer_id}</td>
+          <td>${order.created_at ? new Date(order.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
+          <td>${parseInt(order.total_amount || 0).toLocaleString("vi-VN")}đ</td>
+          <td>${statusBadge}</td>
+          <td>${paymentBadge}</td>
+          <td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();viewOrderDetail(${order.id})"><i class="bi bi-eye"></i></button></td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateStatistics(orders) {
+    document.getElementById("pendingCount").textContent = orders.filter(
+      (o) => o.status === "pending",
+    ).length;
+    document.getElementById("paidCount").textContent = orders.filter(
+      (o) => o.status === "paid",
+    ).length;
+    document.getElementById("shippingCount").textContent = orders.filter(
+      (o) => o.status === "shipping",
+    ).length;
+    document.getElementById("deliveredCount").textContent = orders.filter(
+      (o) => o.status === "delivered",
+    ).length;
+  }
+
+  function searchOrders() {
+    applyFiltersAndSearch();
+  }
+  function filterOrders() {
+    applyFiltersAndSearch();
+  }
+
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("paginationContainer");
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    let html = '<nav><ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1});return false;">‹</a></li>`;
+    let ell = false;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        ell = false;
+        html += `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" onclick="goToPage(${i});return false;">${i}</a></li>`;
+      } else if (!ell) {
+        ell = true;
+        html +=
+          '<li class="page-item disabled"><span class="page-link">…</span></li>';
+      }
+    }
+    html += `<li class="page-item ${currentPage === totalPages ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1});return false;">›</a></li>`;
+    html += `</ul></nav><small class="text-muted ms-3">Trang ${currentPage}/${totalPages} &middot; ${total} mục</small>`;
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage();
+  }
+
+  const STATUS_LABELS = {
+    pending: "Chờ xử lý",
+    created: "Đã tạo",
+    processing: "Đang xử lý",
+    paid: "Đã thanh toán",
+    shipping: "Đang giao",
+    completed: "Hoàn thành",
+    cancelled: "Đã hủy",
+  };
+  const STATUS_BADGE = {
+    pending: "bg-warning",
+    created: "bg-secondary",
+    processing: "bg-info",
+    paid: "bg-info",
+    shipping: "bg-primary",
+    completed: "bg-success",
+    delivered: "bg-success",
+    cancelled: "bg-danger",
+  };
+
+  async function viewOrderDetail(orderId) {
+    selectedOrder = allOrders.find((o) => o.id === orderId);
+    if (!selectedOrder) return;
+
+    document.getElementById("modalOrderId").textContent = orderId;
+    document.getElementById("orderDetailContent").innerHTML =
+      '<p class="text-center"><span class="spinner-border spinner-border-sm"></span> Đang tải...</p>';
+
+    const modal = new bootstrap.Modal(
+      document.getElementById("orderDetailModal"),
+    );
+    modal.show();
+
+    // Set dropdown to current status
+    const sel = document.getElementById("newOrderStatus");
+    if (sel) sel.value = selectedOrder.status;
+
+    // Fetch full detail (with items) from API
+    try {
+      const res = await axios.get(`/api/orders/${orderId}/`);
+      const order = res.data;
+      selectedOrder = { ...selectedOrder, ...order };
+
+      const itemsHtml =
+        order.items && order.items.length
+          ? `<table class="table table-sm table-bordered mt-2">
+            <thead><tr><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+            <tbody>${order.items
+              .map(
+                (i) => `<tr>
+              <td>SP #${i.product_id}</td>
+              <td>${i.quantity}</td>
+              <td>${parseInt(i.unit_price || 0).toLocaleString("vi-VN")}đ</td>
+              <td>${parseInt((i.unit_price || 0) * (i.quantity || 1)).toLocaleString("vi-VN")}đ</td>
+            </tr>`,
+              )
+              .join("")}</tbody>
+           </table>`
+          : '<p class="text-muted small">Không có dữ liệu sản phẩm</p>';
+
+      const badge = `<span class="badge ${STATUS_BADGE[order.status] || "bg-secondary"}">${STATUS_LABELS[order.status] || order.status}</span>`;
+
+      document.getElementById("orderDetailContent").innerHTML = `
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Mã đơn hàng:</strong> #${order.id}</p>
+            <p class="mb-1"><strong>Khách hàng:</strong> KH #${order.customer_id}</p>
+            <p class="mb-1"><strong>Ngày đặt:</strong> ${order.created_at ? new Date(order.created_at).toLocaleString("vi-VN") : "N/A"}</p>
+            <p class="mb-1"><strong>Địa chỉ:</strong> ${order.shipping_address || "N/A"}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Tổng tiền:</strong> <span class="fw-bold text-primary">${parseInt(order.total_amount || 0).toLocaleString("vi-VN")}đ</span></p>
+            <p class="mb-1"><strong>Trạng thái:</strong> ${badge}</p>
+            <p class="mb-1"><strong>Thanh toán:</strong> ${order.payment_status === "paid" ? '<span class="badge bg-success">Đã thanh toán</span>' : '<span class="badge bg-warning">Chưa thanh toán</span>'}</p>
+          </div>
+        </div>
+        <h6 class="border-top pt-2">Danh sách sản phẩm</h6>
+        ${itemsHtml}
+      `;
+    } catch (err) {
+      console.error("Error fetching order detail:", err);
+      // Fallback to cached data
+      document.getElementById("orderDetailContent").innerHTML = `
+        <div class="row">
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Mã đơn hàng:</strong> #${selectedOrder.id}</p>
+            <p class="mb-1"><strong>Khách hàng:</strong> KH #${selectedOrder.customer_id}</p>
+            <p class="mb-1"><strong>Ngày đặt:</strong> ${selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString("vi-VN") : "N/A"}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Tổng tiền:</strong> ${parseInt(selectedOrder.total_amount || 0).toLocaleString("vi-VN")}đ</p>
+            <p class="mb-1"><strong>Trạng thái:</strong> ${STATUS_LABELS[selectedOrder.status] || selectedOrder.status}</p>
+          </div>
+        </div>`;
+    }
+  }
+
+  async function updateOrderStatus() {
+    if (!selectedOrder) return;
+    const newStatus = document.getElementById("newOrderStatus").value;
+    if (!newStatus) return;
+    if (newStatus === selectedOrder.status) {
+      showAlert("Trạng thái không thay đổi", "warning");
+      return;
+    }
+    try {
+      await axios.patch(`/api/orders/${selectedOrder.id}/`, {
+        status: newStatus,
+      });
+      // Update local cache
+      const idx = allOrders.findIndex((o) => o.id === selectedOrder.id);
+      if (idx !== -1) {
+        allOrders[idx].status = newStatus;
+        selectedOrder = allOrders[idx];
+      }
+      updateStatistics(allOrders);
+      applyFiltersAndSearch();
+      bootstrap.Modal.getInstance(
+        document.getElementById("orderDetailModal"),
+      ).hide();
+      showAlert(
+        `Đã cập nhật trạng thái đơn hàng #${selectedOrder.id} thành "${STATUS_LABELS[newStatus] || newStatus}"`,
+        "success",
+      );
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      showAlert(
+        "Cập nhật thất bại: " +
+          (error.response?.data?.error ||
+            error.message ||
+            "Lỗi không xác định"),
+        "danger",
+      );
+    }
+  }
+
+  function exportOrders() {
+    showAlert("Tính năng xuất Excel đang được phát triển", "info");
+  }
+</script>
+{% endblock %}

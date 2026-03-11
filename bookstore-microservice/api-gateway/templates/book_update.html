@@ -1,0 +1,78 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Cập Nhật Sách #{{ book.id }}</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="book-title">Tiêu đề</label>
+        <input
+          id="book-title"
+          type="text"
+          name="title"
+          value="{{ book.title }}"
+          required
+        />
+      </div>
+      <div>
+        <label for="book-author">Tác giả</label>
+        <input
+          id="book-author"
+          type="text"
+          name="author"
+          value="{{ book.author }}"
+          required
+        />
+      </div>
+      <div>
+        <label for="book-image-url">Image URL</label>
+        <input
+          id="book-image-url"
+          type="url"
+          name="image_url"
+          value="{{ book.image_url }}"
+          placeholder="https://example.com/book-cover.jpg"
+        />
+      </div>
+      <div>
+        <label for="book-price">Giá</label>
+        <input
+          id="book-price"
+          type="number"
+          name="price"
+          step="0.01"
+          min="0"
+          value="{{ book.price }}"
+          required
+        />
+      </div>
+      <div>
+        <label for="book-stock">Tồn kho</label>
+        <input
+          id="book-stock"
+          type="number"
+          name="stock"
+          min="0"
+          value="{{ book.stock }}"
+          required
+        />
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Cập Nhật Sách</button>
+        <a
+          href="{% url 'book_list' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+  </article>
+</section>
+{% endblock %}

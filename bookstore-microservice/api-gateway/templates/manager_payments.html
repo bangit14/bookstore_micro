@@ -1,0 +1,332 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Thanh Toán -
+BookStore{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link active" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+    </h2>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <i
+              class="bi bi-check-circle text-success"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="totalRevenue">0đ</h4>
+            <small class="text-muted">Tổng doanh thu</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <i class="bi bi-cash-stack text-info" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="successCount">0</h4>
+            <small class="text-muted">Giao dịch thành công</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <i
+              class="bi bi-clock-history text-warning"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="pendingCount">0</h4>
+            <small class="text-muted">Chờ xử lý</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-danger">
+          <div class="card-body">
+            <i class="bi bi-x-circle text-danger" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="failedCount">0</h4>
+            <small class="text-muted">Thất bại</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              id="searchInput"
+              placeholder="Tìm kiếm giao dịch..."
+              onkeyup="searchPayments()"
+            />
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterStatus"
+              onchange="filterPayments()"
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="success">Thành công</option>
+              <option value="pending">Chờ xử lý</option>
+              <option value="failed">Thất bại</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterMethod"
+              onchange="filterPayments()"
+            >
+              <option value="">Tất cả phương thức</option>
+              <option value="cash">Tiền mặt</option>
+              <option value="card">Thẻ</option>
+              <option value="bank_transfer">Chuyển khoản</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button
+              class="btn btn-outline-primary w-100"
+              onclick="loadPayments()"
+            >
+              <i class="bi bi-arrow-clockwise"></i> Làm mới
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Mã GD</th>
+                <th>Đơn Hàng</th>
+                <th>Số Tiền</th>
+                <th>Phương Thức</th>
+                <th>Trạng Thái</th>
+                <th>Ngày GD</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsTableBody">
+              <tr>
+                <td colspan="7" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          id="paginationContainer"
+          class="d-flex justify-content-center align-items-center mt-3 flex-wrap gap-2"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const PAGE_SIZE = 10;
+  let allPayments = [];
+  let filteredData = [];
+  let currentPage = 1;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadPayments();
+  });
+
+  async function loadPayments() {
+    try {
+      const res = await axios.get("/api/payments/");
+      allPayments = res.data;
+      updateStatistics(allPayments);
+      applyFiltersAndSearch();
+    } catch (error) {
+      console.error("Error loading payments:", error);
+      document.getElementById("paymentsTableBody").innerHTML = `
+        <tr><td colspan="7" class="text-center text-danger">Không thể tải danh sách thanh toán</td></tr>
+      `;
+    }
+  }
+
+  function applyFiltersAndSearch() {
+    const term = document
+      .getElementById("searchInput")
+      .value.toLowerCase()
+      .trim();
+    const status = document.getElementById("filterStatus").value;
+    const method = document.getElementById("filterMethod").value;
+    filteredData = allPayments.filter((p) => {
+      if (
+        term &&
+        !p.id.toString().includes(term) &&
+        !(p.order_id && p.order_id.toString().includes(term))
+      )
+        return false;
+      if (status && p.status !== status) return false;
+      if (method && p.payment_method !== method) return false;
+      return true;
+    });
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    displayPayments(filteredData.slice(start, start + PAGE_SIZE));
+    renderPagination(filteredData.length);
+  }
+
+  function displayPayments(payments) {
+    const tbody = document.getElementById("paymentsTableBody");
+    if (payments.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="text-center">Không có giao dịch nào</td></tr>';
+      return;
+    }
+    let html = "";
+    payments.forEach((payment) => {
+      const statusBadge =
+        {
+          success: '<span class="badge bg-success">Thành công</span>',
+          pending: '<span class="badge bg-warning">Chờ xử lý</span>',
+          failed: '<span class="badge bg-danger">Thất bại</span>',
+        }[payment.status] || '<span class="badge bg-secondary">N/A</span>';
+      const methodBadge =
+        {
+          cash: '<i class="bi bi-cash"></i> Tiền mặt',
+          card: '<i class="bi bi-credit-card"></i> Thẻ',
+          bank_transfer: '<i class="bi bi-bank"></i> Chuyển khoản',
+          cod: '<i class="bi bi-truck"></i> COD',
+        }[payment.payment_method] ||
+        payment.payment_method ||
+        "N/A";
+      html += `
+        <tr>
+          <td>#${payment.id}</td>
+          <td>ĐH #${payment.order_id || "N/A"}</td>
+          <td class="fw-bold">${parseInt(payment.amount || 0).toLocaleString("vi-VN")}đ</td>
+          <td>${methodBadge}</td>
+          <td>${statusBadge}</td>
+          <td>${payment.created_at ? new Date(payment.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
+          <td><button class="btn btn-sm btn-primary" onclick="viewPaymentDetail(${payment.id})"><i class="bi bi-eye"></i></button></td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateStatistics(payments) {
+    const success = payments.filter((p) => p.status === "success");
+    const totalRevenue = success.reduce(
+      (sum, p) => sum + parseFloat(p.amount || 0),
+      0,
+    );
+    document.getElementById("totalRevenue").textContent =
+      Math.round(totalRevenue).toLocaleString("vi-VN") + "đ";
+    document.getElementById("successCount").textContent = success.length;
+    document.getElementById("pendingCount").textContent = payments.filter(
+      (p) => p.status === "pending",
+    ).length;
+    document.getElementById("failedCount").textContent = payments.filter(
+      (p) => p.status === "failed",
+    ).length;
+  }
+
+  function searchPayments() {
+    applyFiltersAndSearch();
+  }
+  function filterPayments() {
+    applyFiltersAndSearch();
+  }
+
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("paginationContainer");
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    let html = '<nav><ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1});return false;">‹</a></li>`;
+    let ell = false;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        ell = false;
+        html += `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" onclick="goToPage(${i});return false;">${i}</a></li>`;
+      } else if (!ell) {
+        ell = true;
+        html +=
+          '<li class="page-item disabled"><span class="page-link">…</span></li>';
+      }
+    }
+    html += `<li class="page-item ${currentPage === totalPages ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1});return false;">›</a></li>`;
+    html += `</ul></nav><small class="text-muted ms-3">Trang ${currentPage}/${totalPages} &middot; ${total} mục</small>`;
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage();
+  }
+
+  function viewPaymentDetail(paymentId) {
+    const payment = allPayments.find((p) => p.id === paymentId);
+    if (!payment) return;
+
+    showAlert(`Chi tiết giao dịch #${paymentId}`, "info");
+  }
+</script>
+{% endblock %}

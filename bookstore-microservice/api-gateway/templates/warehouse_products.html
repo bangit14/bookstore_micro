@@ -1,0 +1,222 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Sản Phẩm - Nhân Viên
+Kho{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-box-seam text-warning"></i>
+          Nhân Viên Kho
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/warehouse/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link active" href="/staff/warehouse/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/staff/warehouse/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+        </nav>
+        <hr />
+        <a href="/logout/" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm / Tồn Kho
+    </h2>
+
+    <!-- Search & Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8 mb-2">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm kiếm sản phẩm..."
+            />
+          </div>
+          <div class="col-md-4 mb-2">
+            <select
+              id="stockFilter"
+              class="form-select"
+              onchange="filterProducts()"
+            >
+              <option value="all">Tất cả</option>
+              <option value="low">Sắp hết hàng (&lt; 5)</option>
+              <option value="out">Hết hàng (= 0)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Danh Sách Sản Phẩm</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Tên Sản Phẩm</th>
+                <th>Giá</th>
+                <th>Tồn Kho</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr>
+                <td colspan="6" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Stock Modal -->
+<div class="modal fade" id="stockModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cập Nhật Tồn Kho</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="productId" />
+        <p id="productName" class="fw-bold"></p>
+        <div class="mb-3">
+          <label class="form-label">Số lượng tồn kho mới</label>
+          <input type="number" id="newStock" class="form-control" min="0" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+        <button type="button" class="btn btn-success" onclick="updateStock()">
+          <i class="bi bi-check-circle"></i> Cập Nhật
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allProducts = [];
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadProducts();
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", filterProducts);
+  });
+
+  async function loadProducts() {
+    try {
+      const res = await axios.get("/api/products/");
+      allProducts = res.data || [];
+      filterProducts();
+    } catch (e) {
+      document.getElementById("productsTableBody").innerHTML =
+        '<tr><td colspan="6" class="text-center text-danger">Không thể tải danh sách sản phẩm</td></tr>';
+    }
+  }
+
+  function filterProducts() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const stockFilter = document.getElementById("stockFilter").value;
+    let filtered = allProducts;
+    if (search)
+      filtered = filtered.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(search) ||
+          p.name?.toLowerCase().includes(search),
+      );
+    if (stockFilter === "low")
+      filtered = filtered.filter(
+        (p) => (p.stock || 0) < 5 && (p.stock || 0) > 0,
+      );
+    if (stockFilter === "out")
+      filtered = filtered.filter((p) => (p.stock || 0) === 0);
+    displayProducts(filtered);
+  }
+
+  function displayProducts(products) {
+    const tbody = document.getElementById("productsTableBody");
+    if (products.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center">Không có sản phẩm nào</td></tr>';
+      return;
+    }
+    tbody.innerHTML = products
+      .map((p) => {
+        const stock = p.stock || 0;
+        const badge =
+          stock === 0
+            ? "bg-danger"
+            : stock < 5
+              ? "bg-warning text-dark"
+              : "bg-success";
+        const label =
+          stock === 0 ? "Hết hàng" : stock < 5 ? "Sắp hết" : "Còn hàng";
+        return `<tr>
+        <td>${p.id}</td>
+        <td>${p.title || p.name || "N/A"}</td>
+        <td>${parseFloat(p.price || 0).toLocaleString("vi-VN")}đ</td>
+        <td><strong>${stock}</strong></td>
+        <td><span class="badge ${badge}">${label}</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" onclick="openStockModal(${p.id}, '${(p.title || p.name || "").replace(/'/g, "\\'")}', ${stock})">
+            <i class="bi bi-pencil"></i> Cập nhật tồn kho
+          </button>
+        </td>
+      </tr>`;
+      })
+      .join("");
+  }
+
+  function openStockModal(id, name, stock) {
+    document.getElementById("productId").value = id;
+    document.getElementById("productName").textContent = name;
+    document.getElementById("newStock").value = stock;
+    new bootstrap.Modal(document.getElementById("stockModal")).show();
+  }
+
+  async function updateStock() {
+    const id = document.getElementById("productId").value;
+    const stock = parseInt(document.getElementById("newStock").value);
+    try {
+      await axios.patch(`/api/products/${id}/`, { stock });
+      bootstrap.Modal.getInstance(document.getElementById("stockModal")).hide();
+      await loadProducts();
+    } catch (e) {
+      alert(
+        "Không thể cập nhật tồn kho: " +
+          (e.response?.data?.detail || e.message),
+      );
+    }
+  }
+</script>
+{% endblock %}

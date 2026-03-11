@@ -1,0 +1,275 @@
+{% extends 'layout_base.html' %} {% block title %}Tài Khoản - BookStore
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card customer-sidebar">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-circle text-primary"></i>
+          Menu Khách Hàng
+        </h5>
+        <nav class="nav flex-column customer-menu">
+          <a class="nav-link" href="/customer/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/customer/products/">
+            <i class="bi bi-book"></i> Sản Phẩm
+          </a>
+          <a class="nav-link" href="/customer/cart/">
+            <i class="bi bi-cart"></i> Giỏ Hàng
+          </a>
+          <a class="nav-link" href="/customer/orders/">
+            <i class="bi bi-receipt"></i> Đơn Hàng
+          </a>
+          <a class="nav-link" href="/customer/reviews/">
+            <i class="bi bi-star"></i> Đánh Giá
+          </a>
+          <a class="nav-link" href="/customer/recommendations/">
+            <i class="bi bi-lightbulb"></i> Gợi Ý AI
+          </a>
+          <a class="nav-link active" href="/customer/profile/">
+            <i class="bi bi-person"></i> Tài Khoản
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-person-circle"></i> Quản Lý Tài Khoản
+    </h2>
+
+    <!-- Profile Info -->
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Thông Tin Tài Khoản</h5>
+      </div>
+      <div class="card-body">
+        <form id="profileForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tên đăng nhập</label>
+              <input type="text" class="form-control" id="username" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Họ tên</label>
+              <input type="text" class="form-control" id="fullName" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Số điện thoại</label>
+              <input type="tel" class="form-control" id="phone" />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">Địa chỉ</label>
+              <textarea class="form-control" id="address" rows="2"></textarea>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="updateProfile()"
+          >
+            <i class="bi bi-save"></i> Cập Nhật Thông Tin
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card mb-4">
+      <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">Đổi Mật Khẩu</h5>
+      </div>
+      <div class="card-body">
+        <form id="passwordForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Mật khẩu hiện tại</label>
+              <input
+                type="password"
+                class="form-control"
+                id="currentPassword"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Mật khẩu mới</label>
+              <input type="password" class="form-control" id="newPassword" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Xác nhận mật khẩu mới</label>
+              <input
+                type="password"
+                class="form-control"
+                id="confirmPassword"
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn btn-warning"
+            onclick="changePassword()"
+          >
+            <i class="bi bi-key"></i> Đổi Mật Khẩu
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Thống Kê Hoạt Động</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-4 mb-3">
+            <div class="p-3">
+              <i
+                class="bi bi-receipt-cutoff text-warning"
+                style="font-size: 2rem"
+              ></i>
+              <h4 class="mt-2" id="totalOrders">0</h4>
+              <p class="text-muted mb-0">Đơn hàng</p>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="p-3">
+              <i
+                class="bi bi-cash-coin text-success"
+                style="font-size: 2rem"
+              ></i>
+              <h4 class="mt-2" id="totalSpent">0đ</h4>
+              <p class="text-muted mb-0">Tổng chi tiêu</p>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="p-3">
+              <i
+                class="bi bi-star-fill text-warning"
+                style="font-size: 2rem"
+              ></i>
+              <h4 class="mt-2" id="totalReviews">0</h4>
+              <p class="text-muted mb-0">Đánh giá</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let customerData = null;
+
+  document.addEventListener('DOMContentLoaded', async function() {
+      await loadProfile();
+      await loadStatistics();
+  });
+
+  async function loadProfile() {
+      try {
+          const customerId = {{ request.session.customer_id|default:1 }};
+          const res = await axios.get(`/api/customers/${customerId}/`);
+          customerData = res.data;
+
+          document.getElementById('username').value = customerData.username || '';
+          document.getElementById('fullName').value = customerData.full_name || '';
+          document.getElementById('email').value = customerData.email || '';
+          document.getElementById('phone').value = customerData.phone || '';
+          document.getElementById('address').value = customerData.address || '';
+      } catch (error) {
+          console.error('Error loading profile:', error);
+          showAlert('Không thể tải thông tin tài khoản', 'danger');
+      }
+  }
+
+  async function updateProfile() {
+      try {
+          const customerId = {{ request.session.customer_id|default:1 }};
+
+          await axios.patch(`/api/customers/${customerId}/`, {
+              full_name: document.getElementById('fullName').value,
+              email: document.getElementById('email').value,
+              phone: document.getElementById('phone').value,
+              address: document.getElementById('address').value
+          });
+
+          showAlert('Cập nhật thông tin thành công!', 'success');
+      } catch (error) {
+          console.error('Error updating profile:', error);
+          showAlert('Không thể cập nhật thông tin', 'danger');
+      }
+  }
+
+  async function changePassword() {
+      const current = document.getElementById('currentPassword').value;
+      const newPass = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+
+      if (!current || !newPass || !confirm) {
+          showAlert('Vui lòng điền đầy đủ thông tin', 'warning');
+          return;
+      }
+
+      if (newPass !== confirm) {
+          showAlert('Mật khẩu mới không khớp', 'warning');
+          return;
+      }
+
+      if (newPass.length < 6) {
+          showAlert('Mật khẩu mới phải có ít nhất 6 ký tự', 'warning');
+          return;
+      }
+
+      try {
+          const customerId = {{ request.session.customer_id|default:1 }};
+
+          await axios.post(`/api/customers/${customerId}/change-password/`, {
+              current_password: current,
+              new_password: newPass
+          });
+
+          showAlert('Đổi mật khẩu thành công!', 'success');
+          document.getElementById('passwordForm').reset();
+      } catch (error) {
+          console.error('Error changing password:', error);
+          const msg = error.response?.data?.error || 'Không thể đổi mật khẩu';
+          showAlert(msg, 'danger');
+      }
+  }
+
+  async function loadStatistics() {
+      try {
+          const customerId = {{ request.session.customer_id|default:1 }};
+
+          // Load orders
+          const ordersRes = await axios.get('/api/orders/');
+          const myOrders = ordersRes.data.filter(o => o.customer_id === customerId);
+
+          const totalOrders = myOrders.length;
+          const totalSpent = myOrders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+
+          document.getElementById('totalOrders').textContent = totalOrders;
+          document.getElementById('totalSpent').textContent = Math.round(totalSpent).toLocaleString('vi-VN') + 'đ';
+
+          // Load reviews
+          const reviewsRes = await axios.get('/api/reviews/');
+          const myReviews = reviewsRes.data.filter(r => r.customer_id === customerId);
+
+          document.getElementById('totalReviews').textContent = myReviews.length;
+
+      } catch (error) {
+          console.error('Error loading statistics:', error);
+      }
+  }
+</script>
+{% endblock %}

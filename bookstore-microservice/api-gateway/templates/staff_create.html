@@ -1,0 +1,47 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Tạo Nhân Viên Mới</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="staff-username">Tên đăng nhập</label>
+        <input id="staff-username" type="text" name="username" required />
+      </div>
+      <div>
+        <label for="staff-name">Họ và tên</label>
+        <input id="staff-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="staff-email">Email</label>
+        <input id="staff-email" type="email" name="email" required />
+      </div>
+      <div>
+        <label for="staff-password">Mật khẩu</label>
+        <input
+          id="staff-password"
+          type="password"
+          name="password"
+          required
+          minlength="6"
+        />
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Tạo Nhân Viên</button>
+        <a
+          href="{% url 'staff_list' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+  </article>
+</section>
+{% endblock %}

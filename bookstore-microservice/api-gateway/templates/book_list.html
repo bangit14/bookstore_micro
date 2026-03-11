@@ -1,0 +1,81 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      "
+    >
+      <h2>Danh Sách Sách</h2>
+      {% if can_create %}
+      <a
+        href="{% url 'book_create' %}"
+        class="btn-primary"
+        style="
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 8px;
+        "
+        >+ Thêm Sách</a
+      >
+      {% endif %}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Ảnh</th>
+          <th>Tiêu đề</th>
+          <th>Tác giả</th>
+          <th>Giá</th>
+          <th>Tồn kho</th>
+          {% if can_create %}
+          <th>Thao tác</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td>{{ book.id }}</td>
+          <td>
+            {% if book.image_url %}
+            <img
+              src="{{ book.image_url }}"
+              alt="{{ book.title }}"
+              style="
+                width: 52px;
+                height: 72px;
+                object-fit: cover;
+                border-radius: 6px;
+              "
+            />
+            {% else %}
+            <span class="muted">N/A</span>
+            {% endif %}
+          </td>
+          <td>{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td>{{ book.price }}VNĐ</td>
+          <td>{{ book.stock }}</td>
+          {% if can_create %}
+          <td><a href="{% url 'book_update' book.id %}">Sửa</a></td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{% if can_create %}7{% else %}6{% endif %}">
+            Không tìm thấy sách nào.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

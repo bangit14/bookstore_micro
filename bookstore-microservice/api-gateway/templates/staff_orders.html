@@ -1,0 +1,357 @@
+{% extends 'layout_base.html' %} {% block title %}Xử Lý Đơn Hàng - Staff
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-badge text-success"></i>
+          Menu Nhân Viên
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/staff/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/staff/inventory/">
+            <i class="bi bi-boxes"></i> Tồn Kho
+          </a>
+          <a class="nav-link active" href="/staff/orders/">
+            <i class="bi bi-receipt"></i> Đơn Hàng
+          </a>
+          <a class="nav-link" href="/staff/shipments/">
+            <i class="bi bi-truck"></i> Vận Chuyển
+          </a>
+          <a class="nav-link" href="/staff/customers/">
+            <i class="bi bi-people"></i> Khách Hàng
+          </a>
+          <a class="nav-link" href="/staff/reviews/">
+            <i class="bi bi-star"></i> Đánh Giá
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-receipt-cutoff"></i> Xử Lý Đơn Hàng
+    </h2>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-2">
+            <select
+              id="statusFilter"
+              class="form-select"
+              onchange="filterOrders()"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="pending" selected>Chờ xử lý</option>
+              <option value="paid">Đã thanh toán</option>
+              <option value="shipping">Đang giao</option>
+              <option value="delivered">Đã giao</option>
+              <option value="cancelled">Đã hủy</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-2">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm theo ID đơn hàng hoặc khách hàng..."
+            />
+          </div>
+          <div class="col-md-2 mb-2">
+            <button class="btn btn-primary w-100" onclick="filterOrders()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Khách Hàng</th>
+                <th>Tổng Tiền</th>
+                <th>Trạng Thái</th>
+                <th>Ngày Đặt</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr>
+                <td colspan="6" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi Tiết Đơn Hàng</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body" id="orderModalBody">
+        <!-- Order details -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Đóng
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          id="confirmBtn"
+          onclick="confirmOrder()"
+        >
+          <i class="bi bi-check-circle"></i> Xác Nhận Đơn
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="shipBtn"
+          onclick="createShipment()"
+        >
+          <i class="bi bi-truck"></i> Tạo Vận Chuyển
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allOrders = [];
+  let selectedOrder = null;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadOrders();
+  });
+
+  async function loadOrders() {
+    try {
+      const res = await axios.get("/api/orders/");
+      allOrders = res.data;
+      filterOrders();
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      document.getElementById("ordersTableBody").innerHTML = `
+            <tr><td colspan="6" class="text-center text-danger">Không thể tải danh sách đơn hàng</td></tr>
+        `;
+    }
+  }
+
+  function filterOrders() {
+    const status = document.getElementById("statusFilter").value;
+    const search = document.getElementById("searchInput").value.toLowerCase();
+
+    let filtered = allOrders;
+
+    if (status !== "all") {
+      filtered = filtered.filter((o) => o.status === status);
+    }
+
+    if (search) {
+      filtered = filtered.filter(
+        (o) =>
+          o.id.toString().includes(search) ||
+          o.customer_id.toString().includes(search),
+      );
+    }
+
+    displayOrders(filtered);
+  }
+
+  function displayOrders(orders) {
+    const tbody = document.getElementById("ordersTableBody");
+
+    if (orders.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center">Không có đơn hàng nào</td></tr>';
+      return;
+    }
+
+    const statusConfig = {
+      pending: { color: "warning", text: "Chờ xử lý" },
+      paid: { color: "info", text: "Đã thanh toán" },
+      shipping: { color: "primary", text: "Đang giao" },
+      delivered: { color: "success", text: "Đã giao" },
+      cancelled: { color: "danger", text: "Đã hủy" },
+    };
+
+    let html = "";
+    orders.forEach((order) => {
+      const status = statusConfig[order.status] || {
+        color: "secondary",
+        text: order.status,
+      };
+
+      html += `
+            <tr>
+                <td><strong>#${order.id}</strong></td>
+                <td>KH #${order.customer_id}</td>
+                <td>${parseFloat(order.total_amount || 0).toLocaleString("vi-VN")}đ</td>
+                <td><span class="badge bg-${status.color}">${status.text}</span></td>
+                <td>${new Date(order.created_at).toLocaleDateString("vi-VN")}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="viewOrder(${order.id})">
+                        <i class="bi bi-eye"></i> Xem
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  async function viewOrder(orderId) {
+    try {
+      const res = await axios.get(`/api/orders/${orderId}/`);
+      selectedOrder = res.data;
+
+      // Try to get customer info
+      let customerInfo = `KH #${selectedOrder.customer_id}`;
+      try {
+        const custRes = await axios.get(
+          `/api/customers/${selectedOrder.customer_id}/`,
+        );
+        customerInfo = `${custRes.data.username} (${custRes.data.email || "N/A"})`;
+      } catch (e) {
+        console.log("Could not load customer info");
+      }
+
+      // Try to get shipment info
+      let shipmentInfo =
+        '<p class="text-muted">Chưa có thông tin vận chuyển</p>';
+      try {
+        const shipRes = await axios.get("/api/shipments/");
+        const shipment = shipRes.data.find((s) => s.order_id === orderId);
+        if (shipment) {
+          shipmentInfo = `
+                    <div class="alert alert-info">
+                        <h6>Thông Tin Vận Chuyển</h6>
+                        <p class="mb-1"><strong>Địa chỉ:</strong> ${shipment.address || "N/A"}</p>
+                        <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-primary">${shipment.status}</span></p>
+                        <p class="mb-0"><strong>Ngày giao dự kiến:</strong> ${new Date(shipment.delivery_date).toLocaleDateString("vi-VN")}</p>
+                    </div>
+                `;
+        }
+      } catch (e) {
+        console.log("Could not load shipment info");
+      }
+
+      document.getElementById("orderModalBody").innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Đơn Hàng #${selectedOrder.id}</h5>
+                    <p><strong>Khách hàng:</strong> ${customerInfo}</p>
+                    <p><strong>Ngày đặt:</strong> ${new Date(selectedOrder.created_at).toLocaleString("vi-VN")}</p>
+                    <p><strong>Trạng thái:</strong> <span class="badge bg-primary">${selectedOrder.status}</span></p>
+                    <p><strong>Tổng tiền:</strong> <span class="text-success fs-4">${parseFloat(selectedOrder.total_amount || 0).toLocaleString("vi-VN")}đ</span></p>
+                </div>
+                <div class="col-md-6">
+                    ${shipmentInfo}
+                </div>
+            </div>
+        `;
+
+      // Show/hide action buttons
+      const confirmBtn = document.getElementById("confirmBtn");
+      const shipBtn = document.getElementById("shipBtn");
+
+      if (selectedOrder.status === "pending") {
+        confirmBtn.style.display = "inline-block";
+        shipBtn.style.display = "none";
+      } else if (selectedOrder.status === "paid") {
+        confirmBtn.style.display = "none";
+        shipBtn.style.display = "inline-block";
+      } else {
+        confirmBtn.style.display = "none";
+        shipBtn.style.display = "none";
+      }
+
+      const modal = new bootstrap.Modal(document.getElementById("orderModal"));
+      modal.show();
+    } catch (error) {
+      console.error("Error loading order:", error);
+      showAlert("Không thể tải chi tiết đơn hàng", "danger");
+    }
+  }
+
+  async function confirmOrder() {
+    if (!selectedOrder) return;
+
+    if (!confirm("Xác nhận đơn hàng này?")) return;
+
+    try {
+      await axios.patch(`/api/orders/${selectedOrder.id}/`, {
+        status: "paid",
+      });
+
+      showAlert("Đã xác nhận đơn hàng", "success");
+      bootstrap.Modal.getInstance(document.getElementById("orderModal")).hide();
+      await loadOrders();
+    } catch (error) {
+      console.error("Error confirming order:", error);
+      showAlert("Không thể xác nhận đơn hàng", "danger");
+    }
+  }
+
+  async function createShipment() {
+    if (!selectedOrder) return;
+
+    const address = prompt("Nhập địa chỉ giao hàng:");
+    if (!address) return;
+
+    try {
+      // Create shipment
+      const deliveryDate = new Date();
+      deliveryDate.setDate(deliveryDate.getDate() + 3); // +3 days
+
+      await axios.post("/api/shipments/", {
+        order_id: selectedOrder.id,
+        address: address,
+        status: "pending",
+        delivery_date: deliveryDate.toISOString(),
+      });
+
+      // Update order status
+      await axios.patch(`/api/orders/${selectedOrder.id}/`, {
+        status: "shipping",
+      });
+
+      showAlert("Đã tạo vận chuyển!", "success");
+      bootstrap.Modal.getInstance(document.getElementById("orderModal")).hide();
+      await loadOrders();
+    } catch (error) {
+      console.error("Error creating shipment:", error);
+      showAlert("Không thể tạo vận chuyển", "danger");
+    }
+  }
+</script>
+{% endblock %}

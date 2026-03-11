@@ -50,8 +50,12 @@ WSGI_APPLICATION = "book_service.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME", "book_db"),
+        "USER": os.getenv("DB_USER", "root"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "rootpassword"),
+        "HOST": os.getenv("DB_HOST", "mysql-db"),
+        "PORT": os.getenv("DB_PORT", "3306"),
     }
 }
 

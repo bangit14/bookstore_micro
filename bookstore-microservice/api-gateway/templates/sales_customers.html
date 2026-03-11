@@ -1,0 +1,217 @@
+{% extends 'layout_base.html' %} {% block title %}Hỗ Trợ Khách Hàng - Nhân Viên
+Bán Hàng{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-badge text-success"></i>
+          Nhân Viên Bán Hàng
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/sales/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/staff/sales/orders/">
+            <i class="bi bi-receipt"></i> Xử Lý Đơn Hàng
+          </a>
+          <a class="nav-link active" href="/staff/sales/customers/">
+            <i class="bi bi-people"></i> Hỗ Trợ Khách Hàng
+          </a>
+          <a class="nav-link" href="/staff/sales/reviews/">
+            <i class="bi bi-chat-left-text"></i> Kiểm Duyệt Đánh Giá
+          </a>
+        </nav>
+        <hr />
+        <a href="/logout/" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-people"></i> Hỗ Trợ Khách Hàng
+    </h2>
+
+    <!-- Search -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-10 mb-2">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm theo tên, email..."
+              oninput="filterCustomers()"
+            />
+          </div>
+          <div class="col-md-2 mb-2">
+            <button class="btn btn-primary w-100" onclick="loadCustomers()">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-people"></i> Danh Sách Khách Hàng</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Số Điện Thoại</th>
+                <th>Địa Chỉ</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody">
+              <tr>
+                <td colspan="6" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Orders Modal -->
+<div class="modal fade" id="customerOrdersModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Đơn Hàng Của Khách</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body" id="customerOrdersBody">Đang tải...</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allCustomers = [];
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadCustomers();
+  });
+
+  async function loadCustomers() {
+    try {
+      const res = await axios.get("/api/customers/");
+      allCustomers = res.data || [];
+      filterCustomers();
+    } catch (e) {
+      document.getElementById("customersTableBody").innerHTML =
+        '<tr><td colspan="6" class="text-center text-danger">Không thể tải danh sách khách hàng</td></tr>';
+    }
+  }
+
+  function filterCustomers() {
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    let filtered = allCustomers;
+    if (search)
+      filtered = filtered.filter(
+        (c) =>
+          (c.name || "").toLowerCase().includes(search) ||
+          (c.email || "").toLowerCase().includes(search) ||
+          (c.phone || "").toLowerCase().includes(search),
+      );
+    displayCustomers(filtered);
+  }
+
+  function displayCustomers(customers) {
+    const tbody = document.getElementById("customersTableBody");
+    if (customers.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center">Không có khách hàng nào</td></tr>';
+      return;
+    }
+    tbody.innerHTML = customers
+      .map(
+        (c) => `<tr>
+      <td>#${c.id}</td>
+      <td>${c.name || "N/A"}</td>
+      <td>${c.email || "N/A"}</td>
+      <td>${c.phone || "N/A"}</td>
+      <td>${c.address || "N/A"}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-primary" onclick="viewCustomerOrders(${c.id}, '${c.name || ""}')">
+          <i class="bi bi-bag"></i> Đơn hàng
+        </button>
+      </td>
+    </tr>`,
+      )
+      .join("");
+  }
+
+  async function viewCustomerOrders(customerId, customerName) {
+    const modal = new bootstrap.Modal(
+      document.getElementById("customerOrdersModal"),
+    );
+    document.querySelector("#customerOrdersModal .modal-title").textContent =
+      `Đơn hàng của: ${customerName}`;
+    const body = document.getElementById("customerOrdersBody");
+    body.innerHTML = "Đang tải...";
+    modal.show();
+    try {
+      const res = await axios.get(`/api/orders/?customer_id=${customerId}`);
+      const orders = res.data || [];
+      if (orders.length === 0) {
+        body.innerHTML =
+          '<p class="text-center">Khách hàng chưa có đơn hàng nào.</p>';
+        return;
+      }
+      const statusConfig = {
+        pending: { color: "warning", text: "Chờ xác nhận" },
+        confirmed: { color: "info", text: "Đã xác nhận" },
+        shipping: { color: "primary", text: "Đang giao" },
+        delivered: { color: "success", text: "Đã giao" },
+        cancelled: { color: "danger", text: "Đã hủy" },
+      };
+      body.innerHTML = `<div class="table-responsive"><table class="table table-sm">
+        <thead><tr><th>ID</th><th>Tổng Tiền</th><th>Ngày Đặt</th><th>Trạng Thái</th></tr></thead>
+        <tbody>${orders
+          .map((o) => {
+            const st = statusConfig[o.status] || {
+              color: "secondary",
+              text: o.status,
+            };
+            return `<tr>
+            <td>#${o.id}</td>
+            <td>${o.total_price ? parseInt(o.total_price).toLocaleString("vi-VN") + "₫" : "N/A"}</td>
+            <td>${o.created_at ? new Date(o.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
+            <td><span class="badge bg-${st.color}">${st.text}</span></td>
+          </tr>`;
+          })
+          .join("")}</tbody>
+      </table></div>`;
+    } catch (e) {
+      body.innerHTML =
+        '<p class="text-danger">Không thể tải đơn hàng của khách</p>';
+    }
+  }
+</script>
+{% endblock %}

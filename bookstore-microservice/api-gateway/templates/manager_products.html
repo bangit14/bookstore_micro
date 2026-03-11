@@ -1,0 +1,492 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Sản Phẩm - BookStore
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link active" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-white">
+        <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+      </h2>
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#productModal"
+        onclick="openAddModal()"
+      >
+        <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <input
+              type="text"
+              class="form-control"
+              id="searchInput"
+              placeholder="Tìm kiếm sản phẩm..."
+              onkeyup="searchProducts()"
+            />
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterCategory"
+              onchange="applyFiltersAndSearch()"
+            >
+              <option value="">Tất cả danh mục</option>
+              <option value="book">Sách</option>
+              <option value="product">Sản phẩm</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterStatus"
+              onchange="applyFiltersAndSearch()"
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="available">Còn hàng</option>
+              <option value="low_stock">Sắp hết</option>
+              <option value="out_of_stock">Hết hàng</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tên Sản Phẩm</th>
+                <th>Tác Giả/Nhà SX</th>
+                <th>Giá</th>
+                <th>Tồn Kho</th>
+                <th>Loại</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr>
+                <td colspan="8" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          id="paginationContainer"
+          class="d-flex justify-content-center align-items-center mt-3 flex-wrap gap-2"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Thêm Sản Phẩm</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="productForm">
+          <input type="hidden" id="productId" />
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Tên Sản Phẩm <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="productName"
+                required
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Loại</label>
+              <select class="form-select" id="productType">
+                <option value="book">Sách</option>
+                <option value="product">Sản phẩm</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tác Giả/Nhà SX</label>
+              <input type="text" class="form-control" id="author" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Image URL (cho sách)</label>
+              <input
+                type="url"
+                class="form-control"
+                id="imageUrl"
+                placeholder="https://example.com/book-cover.jpg"
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Giá <span class="text-danger">*</span></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="price"
+                required
+                min="0"
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Tồn Kho <span class="text-danger">*</span></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="stock"
+                required
+                min="0"
+              />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">Mô Tả</label>
+              <textarea
+                class="form-control"
+                id="description"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+        <button type="button" class="btn btn-primary" onclick="saveProduct()">
+          <i class="bi bi-save"></i> Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const PAGE_SIZE = 10;
+  let allProducts = [];
+  let filteredData = [];
+  let currentPage = 1;
+  let isEditMode = false;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadProducts();
+  });
+
+  async function loadProducts() {
+    try {
+      const booksRes = await axios.get("/api/books/");
+      const books = booksRes.data.map((b) => ({
+        ...b,
+        type: "book",
+        name: b.title,
+        manufacturer: b.author,
+      }));
+      const productsRes = await axios.get("/api/products/");
+      const products = productsRes.data.map((p) => ({
+        ...p,
+        type: "product",
+        name: p.name,
+        manufacturer: p.manufacturer || "N/A",
+      }));
+      allProducts = [...books, ...products];
+      applyFiltersAndSearch();
+    } catch (error) {
+      console.error("Error loading products:", error);
+      document.getElementById("productsTableBody").innerHTML = `
+        <tr><td colspan="8" class="text-center text-danger">Không thể tải danh sách sản phẩm${error.response?.status ? " (HTTP " + error.response.status + ")" : ""}</td></tr>
+      `;
+    }
+  }
+
+  function applyFiltersAndSearch() {
+    const term = document
+      .getElementById("searchInput")
+      .value.toLowerCase()
+      .trim();
+    const category = document.getElementById("filterCategory").value;
+    const status = document.getElementById("filterStatus").value;
+    filteredData = allProducts.filter((p) => {
+      if (
+        term &&
+        !(
+          (p.name && p.name.toLowerCase().includes(term)) ||
+          (p.manufacturer && p.manufacturer.toLowerCase().includes(term))
+        )
+      )
+        return false;
+      if (category && p.type !== category) return false;
+      if (status === "available" && p.stock <= 10) return false;
+      if (status === "low_stock" && (p.stock === 0 || p.stock > 10))
+        return false;
+      if (status === "out_of_stock" && p.stock !== 0) return false;
+      return true;
+    });
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    displayProducts(filteredData.slice(start, start + PAGE_SIZE));
+    renderPagination(filteredData.length);
+  }
+
+  function displayProducts(products) {
+    const tbody = document.getElementById("productsTableBody");
+    if (products.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="8" class="text-center">Không có sản phẩm nào</td></tr>';
+      return;
+    }
+    let html = "";
+    products.forEach((p) => {
+      const statusBadge =
+        p.stock > 10
+          ? '<span class="badge bg-success">Còn hàng</span>'
+          : p.stock > 0
+            ? '<span class="badge bg-warning">Sắp hết</span>'
+            : '<span class="badge bg-danger">Hết hàng</span>';
+      const typeBadge =
+        p.type === "book"
+          ? '<span class="badge bg-info">Sách</span>'
+          : '<span class="badge bg-secondary">Sản phẩm</span>';
+      html += `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.manufacturer}</td>
+          <td>${parseInt(p.price || 0).toLocaleString("vi-VN")}đ</td>
+          <td>${p.stock}</td>
+          <td>${typeBadge}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="editProduct(${p.id}, '${p.type}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id}, '${p.type}')"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function searchProducts() {
+    applyFiltersAndSearch();
+  }
+
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("paginationContainer");
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    let html = '<nav><ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1});return false;">‹</a></li>`;
+    let ell = false;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        ell = false;
+        html += `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" onclick="goToPage(${i});return false;">${i}</a></li>`;
+      } else if (!ell) {
+        ell = true;
+        html +=
+          '<li class="page-item disabled"><span class="page-link">…</span></li>';
+      }
+    }
+    html += `<li class="page-item ${currentPage === totalPages ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1});return false;">›</a></li>`;
+    html += `</ul></nav><small class="text-muted ms-3">Trang ${currentPage}/${totalPages} &middot; ${total} mục</small>`;
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage();
+  }
+
+  function openAddModal() {
+    isEditMode = false;
+    document.getElementById("modalTitle").textContent = "Thêm Sản Phẩm";
+    document.getElementById("productForm").reset();
+    document.getElementById("productId").value = "";
+  }
+
+  async function editProduct(id, type) {
+    isEditMode = true;
+    try {
+      const endpoint =
+        type === "book" ? `/api/books/${id}/` : `/api/products/${id}/`;
+      const res = await axios.get(endpoint);
+      const product = res.data;
+
+      document.getElementById("modalTitle").textContent = "Chỉnh Sửa Sản Phẩm";
+      document.getElementById("productId").value = product.id;
+      document.getElementById("productName").value =
+        product.title || product.name;
+      document.getElementById("productType").value = type;
+      document.getElementById("author").value =
+        product.author || product.manufacturer || "";
+      document.getElementById("imageUrl").value = product.image_url || "";
+      document.getElementById("price").value = product.price || 0;
+      document.getElementById("stock").value = product.stock || 0;
+      document.getElementById("description").value = product.description || "";
+
+      const modal = new bootstrap.Modal(
+        document.getElementById("productModal"),
+      );
+      modal.show();
+    } catch (error) {
+      console.error("Error loading product:", error);
+      showAlert("Không thể tải thông tin sản phẩm", "danger");
+    }
+  }
+
+  async function saveProduct() {
+    const name = document.getElementById("productName").value;
+    const price = document.getElementById("price").value;
+    const stock = document.getElementById("stock").value;
+
+    if (!name || !price || !stock) {
+      showAlert("Vui lòng điền đầy đủ thông tin bắt buộc", "warning");
+      return;
+    }
+
+    const type = document.getElementById("productType").value;
+    const data = {
+      price: price,
+      stock: stock,
+      description: document.getElementById("description").value,
+    };
+
+    if (type === "book") {
+      data.title = name;
+      data.author = document.getElementById("author").value;
+      data.image_url = document.getElementById("imageUrl").value;
+    } else {
+      data.name = name;
+      data.manufacturer = document.getElementById("author").value;
+    }
+
+    try {
+      if (isEditMode) {
+        const id = document.getElementById("productId").value;
+        const endpoint =
+          type === "book" ? `/api/books/${id}/` : `/api/products/${id}/`;
+        await axios.patch(endpoint, data);
+        showAlert("Cập nhật sản phẩm thành công!", "success");
+      } else {
+        const endpoint = type === "book" ? "/api/books/" : "/api/products/";
+        await axios.post(endpoint, data);
+        showAlert("Thêm sản phẩm thành công!", "success");
+      }
+
+      bootstrap.Modal.getInstance(
+        document.getElementById("productModal"),
+      ).hide();
+      await loadProducts();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      let errorMsg = "Không thể lưu thông tin sản phẩm";
+      if (error.response?.data) {
+        // Show detailed error from server
+        if (typeof error.response.data === "object") {
+          errorMsg += ": " + JSON.stringify(error.response.data);
+        } else {
+          errorMsg += ": " + error.response.data;
+        }
+      } else if (error.response?.status) {
+        errorMsg += " (HTTP " + error.response.status + ")";
+      }
+      showAlert(errorMsg, "danger");
+    }
+  }
+
+  async function deleteProduct(id, type) {
+    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+      return;
+    }
+
+    try {
+      const endpoint =
+        type === "book" ? `/api/books/${id}/` : `/api/products/${id}/`;
+      await axios.delete(endpoint);
+      showAlert("Đã xóa sản phẩm thành công!", "success");
+      await loadProducts();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      let errorMsg = "Không thể xóa sản phẩm";
+      if (error.response?.data?.error) {
+        errorMsg += ": " + error.response.data.error;
+      } else if (error.response?.status) {
+        errorMsg += " (HTTP " + error.response.status + ")";
+      }
+      showAlert(errorMsg, "danger");
+    }
+  }
+</script>
+{% endblock %}

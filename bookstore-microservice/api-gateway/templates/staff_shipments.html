@@ -1,0 +1,199 @@
+{% extends 'layout_base.html' %} {% block title %}Vận Chuyển - Nhân Viên{%
+endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-badge text-success"></i> Menu Nhân Viên
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/dashboard/"
+            ><i class="bi bi-speedometer2"></i> Dashboard</a
+          >
+          <a class="nav-link" href="/staff/products/"
+            ><i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm</a
+          >
+          <a class="nav-link" href="/staff/inventory/"
+            ><i class="bi bi-boxes"></i> Quản Lý Tồn Kho</a
+          >
+          <a class="nav-link" href="/staff/orders/"
+            ><i class="bi bi-receipt"></i> Xử Lý Đơn Hàng</a
+          >
+          <a class="nav-link active" href="/staff/shipments/"
+            ><i class="bi bi-truck"></i> Hỗ Trợ Vận Chuyển</a
+          >
+          <a class="nav-link" href="/staff/customers/"
+            ><i class="bi bi-people"></i> Hỗ Trợ Khách Hàng</a
+          >
+          <a class="nav-link" href="/staff/reviews/"
+            ><i class="bi bi-star"></i> Kiểm Duyệt Đánh Giá</a
+          >
+        </nav>
+        <hr />
+        <a href="/logout/" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-truck"></i> Hỗ Trợ Vận Chuyển &amp; Theo Dõi Giao Hàng
+    </h2>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-2">
+            <select
+              id="statusFilter"
+              class="form-select"
+              onchange="filterShipments()"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="pending">Chờ xử lý</option>
+              <option value="processing">Đang đóng gói</option>
+              <option value="shipping">Đang giao</option>
+              <option value="delivered">Đã giao</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-2">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm theo ID đơn hàng..."
+              oninput="filterShipments()"
+            />
+          </div>
+          <div class="col-md-2 mb-2">
+            <button class="btn btn-primary w-100" onclick="loadShipments()">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipments Table -->
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Danh Sách Vận Chuyển</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Đơn Hàng</th>
+                <th>Địa Chỉ Giao</th>
+                <th>Ngày Giao DK</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="shipmentsTableBody">
+              <tr>
+                <td colspan="6" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allShipments = [];
+  const statusConfig = {
+    pending: { color: "warning", text: "Chờ xử lý" },
+    processing: { color: "info", text: "Đang đóng gói" },
+    shipping: { color: "primary", text: "Đang giao" },
+    delivered: { color: "success", text: "Đã giao" },
+  };
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadShipments();
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", filterShipments);
+  });
+
+  async function loadShipments() {
+    try {
+      const res = await axios.get("/api/shipments/");
+      allShipments = res.data || [];
+      filterShipments();
+    } catch (e) {
+      document.getElementById("shipmentsTableBody").innerHTML =
+        '<tr><td colspan="6" class="text-center text-danger">Không thể tải danh sách vận chuyển</td></tr>';
+    }
+  }
+
+  function filterShipments() {
+    const status = document.getElementById("statusFilter").value;
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    let filtered = allShipments;
+    if (status !== "all")
+      filtered = filtered.filter((s) => s.status === status);
+    if (search)
+      filtered = filtered.filter(
+        (s) =>
+          s.order_id?.toString().includes(search) ||
+          s.id?.toString().includes(search),
+      );
+    displayShipments(filtered);
+  }
+
+  function displayShipments(shipments) {
+    const tbody = document.getElementById("shipmentsTableBody");
+    if (!shipments.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center">Không có vận chuyển nào</td></tr>';
+      return;
+    }
+    tbody.innerHTML = shipments
+      .map((s) => {
+        const st = statusConfig[s.status] || {
+          color: "secondary",
+          text: s.status,
+        };
+        let actions = "";
+        if (s.status === "pending") {
+          actions = `<button class="btn btn-sm btn-info" onclick="updateStatus(${s.id}, 'processing')"><i class="bi bi-box-seam"></i> Đóng gói</button>`;
+        } else if (s.status === "processing") {
+          actions = `<button class="btn btn-sm btn-primary" onclick="updateStatus(${s.id}, 'shipping')"><i class="bi bi-truck"></i> Giao hàng</button>`;
+        } else if (s.status === "shipping") {
+          actions = `<button class="btn btn-sm btn-success" onclick="updateStatus(${s.id}, 'delivered')"><i class="bi bi-check-lg"></i> Đã giao</button>`;
+        } else {
+          actions = `<span class="text-muted small">Hoàn tất</span>`;
+        }
+        return `<tr>
+        <td>#${s.id}</td>
+        <td>#${s.order_id}</td>
+        <td>${s.address || "N/A"}</td>
+        <td>${s.delivery_date ? new Date(s.delivery_date).toLocaleDateString("vi-VN") : "N/A"}</td>
+        <td><span class="badge bg-${st.color}">${st.text}</span></td>
+        <td>${actions}</td>
+      </tr>`;
+      })
+      .join("");
+  }
+
+  async function updateStatus(id, newStatus) {
+    try {
+      await axios.patch(`/api/shipments/${id}/`, { status: newStatus });
+      await loadShipments();
+    } catch (e) {
+      alert("Không thể cập nhật: " + (e.response?.data?.detail || e.message));
+    }
+  }
+</script>
+{% endblock %}

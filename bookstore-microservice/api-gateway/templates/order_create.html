@@ -1,0 +1,63 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Tạo Đơn Hàng Mới</h2>
+    <form method="post" class="stack">
+      {% csrf_token %} {% if session_user.role != "customer" %}
+      <div>
+        <label for="order-customer-id">Mã khách hàng</label>
+        <input
+          id="order-customer-id"
+          type="number"
+          name="customer_id"
+          required
+        />
+      </div>
+      {% endif %}
+      <div>
+        <label for="order-shipping-address">Địa chỉ giao hàng</label>
+        <input
+          id="order-shipping-address"
+          type="text"
+          name="shipping_address"
+          required
+        />
+      </div>
+      <div>
+        <label for="order-status">Trạng thái</label>
+        <select id="order-status" name="status">
+          <option value="pending">Chờ xử lý</option>
+          <option value="created">Đã tạo</option>
+          <option value="processing">Đang xử lý</option>
+        </select>
+      </div>
+      <div>
+        <label for="order-total-amount">Tổng tiền</label>
+        <input
+          id="order-total-amount"
+          type="number"
+          min="0"
+          step="0.01"
+          name="total_amount"
+          required
+        />
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Tạo Đơn Hàng</button>
+        <a
+          href="{% url 'order_list' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,421 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Nhân Viên - Manager
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link active" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-white">
+        <i class="bi bi-people-fill"></i> Quản Lý Nhân Viên
+      </h2>
+      <button
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#staffModal"
+        onclick="openAddModal()"
+      >
+        <i class="bi bi-plus-circle"></i> Thêm Nhân Viên
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-10">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm kiếm theo tên, email..."
+            />
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-primary w-100" onclick="searchStaff()">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Họ Tên</th>
+                <th>Email</th>
+                <th>Phòng Ban</th>
+                <th>Vị Trí</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody">
+              <tr>
+                <td colspan="8" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          id="paginationContainer"
+          class="d-flex justify-content-center align-items-center mt-3 flex-wrap gap-2"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Modal -->
+<div class="modal fade" id="staffModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Thêm Nhân Viên</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="staffForm">
+          <input type="hidden" id="staffId" />
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Username <span class="text-danger">*</span></label
+              >
+              <input type="text" class="form-control" id="username" required />
+              <small class="text-muted">Dùng để đăng nhập hệ thống</small>
+            </div>
+            <div class="col-md-6 mb-3" id="passwordFieldGroup">
+              <label class="form-label"
+                >Mật khẩu <span class="text-danger">*</span></label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                minlength="6"
+              />
+              <small class="text-muted">Tối thiểu 6 ký tự</small>
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label"
+                >Họ tên <span class="text-danger">*</span></label
+              >
+              <input type="text" class="form-control" id="name" required />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label"
+                >Email <span class="text-danger">*</span></label
+              >
+              <input type="email" class="form-control" id="email" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Phòng ban <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="department"
+                required
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Vị trí <span class="text-danger">*</span></label
+              >
+              <select class="form-select" id="position" required>
+                <option value="">-- Chọn vị trí --</option>
+                <option value="Nhân viên">Nhân viên</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+        <button type="button" class="btn btn-primary" onclick="saveStaff()">
+          <i class="bi bi-save"></i> Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const PAGE_SIZE = 10;
+  let allStaff = [];
+  let filteredData = [];
+  let currentPage = 1;
+  let isEditMode = false;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadStaff();
+  });
+
+  async function loadStaff() {
+    try {
+      const res = await axios.get("/api/staff/");
+      allStaff = res.data;
+      applyFiltersAndSearch();
+    } catch (error) {
+      console.error("Error loading staff:", error);
+      document.getElementById("staffTableBody").innerHTML = `
+            <tr><td colspan="8" class="text-center text-danger">Không thể tải danh sách nhân viên</td></tr>
+        `;
+    }
+  }
+
+  function applyFiltersAndSearch() {
+    const term = document
+      .getElementById("searchInput")
+      .value.toLowerCase()
+      .trim();
+    filteredData = allStaff.filter(
+      (s) =>
+        !term ||
+        (s.username && s.username.toLowerCase().includes(term)) ||
+        (s.name && s.name.toLowerCase().includes(term)) ||
+        (s.email && s.email.toLowerCase().includes(term)) ||
+        (s.department && s.department.toLowerCase().includes(term)),
+    );
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    displayStaff(filteredData.slice(start, start + PAGE_SIZE));
+    renderPagination(filteredData.length);
+  }
+
+  function displayStaff(staff) {
+    const tbody = document.getElementById("staffTableBody");
+    if (staff.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="8" class="text-center">Không có nhân viên nào</td></tr>';
+      return;
+    }
+    let html = "";
+    staff.forEach((s) => {
+      const statusBadge = s.is_active
+        ? '<span class="badge bg-success">Đang làm</span>'
+        : '<span class="badge bg-secondary">Nghỉ việc</span>';
+      html += `
+            <tr>
+                <td>${s.id}</td>
+                <td><strong>${s.username || "N/A"}</strong></td>
+                <td>${s.name || "N/A"}</td>
+                <td>${s.email || "N/A"}</td>
+                <td>${s.department || "N/A"}</td>
+                <td>${s.position || "N/A"}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editStaff(${s.id})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteStaff(${s.id})"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function searchStaff() {
+    applyFiltersAndSearch();
+  }
+
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("paginationContainer");
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    let html = '<nav><ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1});return false;">‹</a></li>`;
+    let ell = false;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        ell = false;
+        html += `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" onclick="goToPage(${i});return false;">${i}</a></li>`;
+      } else if (!ell) {
+        ell = true;
+        html +=
+          '<li class="page-item disabled"><span class="page-link">…</span></li>';
+      }
+    }
+    html += `<li class="page-item ${currentPage === totalPages ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1});return false;">›</a></li>`;
+    html += `</ul></nav><small class="text-muted ms-3">Trang ${currentPage}/${totalPages} &middot; ${total} mục</small>`;
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage();
+  }
+
+  function openAddModal() {
+    isEditMode = false;
+    document.getElementById("modalTitle").textContent = "Thêm Nhân Viên Mới";
+    document.getElementById("staffForm").reset();
+    document.getElementById("staffId").value = "";
+    document.getElementById("username").readOnly = false;
+    document.getElementById("password").required = true;
+    document.getElementById("passwordFieldGroup").style.display = "block";
+  }
+
+  async function editStaff(id) {
+    isEditMode = true;
+    try {
+      const res = await axios.get(`/api/staff/${id}/`);
+      const staff = res.data;
+
+      document.getElementById("modalTitle").textContent = "Chỉnh Sửa Nhân Viên";
+      document.getElementById("staffId").value = staff.id;
+      document.getElementById("username").value = staff.username || "";
+      document.getElementById("username").readOnly = true;
+      document.getElementById("name").value = staff.name || "";
+      document.getElementById("email").value = staff.email || "";
+      document.getElementById("department").value = staff.department || "";
+      document.getElementById("position").value = staff.position || "";
+      document.getElementById("password").value = "";
+      document.getElementById("password").required = false;
+      document.getElementById("passwordFieldGroup").style.display = "none";
+
+      const modal = new bootstrap.Modal(document.getElementById("staffModal"));
+      modal.show();
+    } catch (error) {
+      console.error("Error loading staff:", error);
+      showAlert("Không thể tải thông tin nhân viên", "danger");
+    }
+  }
+
+  async function saveStaff() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const department = document.getElementById("department").value;
+    const position = document.getElementById("position").value;
+
+    if (!username || !name || !email || !department || !position) {
+      showAlert("Vui lòng điền đầy đủ thông tin bắt buộc", "warning");
+      return;
+    }
+
+    // Kiểm tra password khi tạo mới
+    if (!isEditMode && (!password || password.length < 6)) {
+      showAlert("Mật khẩu phải có ít nhất 6 ký tự", "warning");
+      return;
+    }
+
+    const data = {
+      username: username,
+      name: name,
+      email: email,
+      department: department,
+      position: position,
+    };
+
+    // Chỉ gửi password khi tạo mới
+    if (!isEditMode) {
+      data.password = password;
+    }
+
+    try {
+      if (isEditMode) {
+        const id = document.getElementById("staffId").value;
+        await axios.patch(`/api/staff/${id}/`, data);
+        showAlert("Cập nhật nhân viên thành công!", "success");
+      } else {
+        await axios.post("/api/staff/", data);
+        showAlert(
+          "Thêm nhân viên thành công! Tài khoản đã được tạo.",
+          "success",
+        );
+      }
+
+      bootstrap.Modal.getInstance(document.getElementById("staffModal")).hide();
+      await loadStaff();
+    } catch (error) {
+      console.error("Error saving staff:", error);
+      let errorMsg = "Không thể lưu thông tin nhân viên";
+      if (error.response && error.response.data) {
+        if (error.response.data.error) {
+          errorMsg = error.response.data.error;
+        } else {
+          errorMsg = JSON.stringify(error.response.data);
+        }
+      }
+      showAlert(errorMsg, "danger");
+    }
+  }
+
+  async function deleteStaff(id) {
+    if (!confirm("Bạn có chắc muốn xóa nhân viên này?")) return;
+
+    try {
+      await axios.delete(`/api/staff/${id}/`);
+      showAlert("Đã xóa nhân viên", "success");
+      await loadStaff();
+    } catch (error) {
+      console.error("Error deleting staff:", error);
+      showAlert("Không thể xóa nhân viên", "danger");
+    }
+  }
+</script>
+{% endblock %}

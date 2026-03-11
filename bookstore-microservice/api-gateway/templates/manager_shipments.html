@@ -1,0 +1,321 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Vận Chuyển -
+BookStore{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link active" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+    </h2>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <i class="bi bi-box-seam text-warning" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="preparingCount">0</h4>
+            <small class="text-muted">Đang chuẩn bị</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <i class="bi bi-truck text-primary" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="shippingCount">0</h4>
+            <small class="text-muted">Đang giao</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <i
+              class="bi bi-check-circle text-success"
+              style="font-size: 2rem"
+            ></i>
+            <h4 class="mt-2" id="deliveredCount">0</h4>
+            <small class="text-muted">Đã giao</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-danger">
+          <div class="card-body">
+            <i class="bi bi-x-circle text-danger" style="font-size: 2rem"></i>
+            <h4 class="mt-2" id="returnedCount">0</h4>
+            <small class="text-muted">Hoàn trả</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-5">
+            <input
+              type="text"
+              class="form-control"
+              id="searchInput"
+              placeholder="Tìm kiếm vận đơn..."
+              onkeyup="searchShipments()"
+            />
+          </div>
+          <div class="col-md-3">
+            <select
+              class="form-select"
+              id="filterStatus"
+              onchange="filterShipments()"
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="preparing">Đang chuẩn bị</option>
+              <option value="shipping">Đang giao</option>
+              <option value="delivered">Đã giao</option>
+              <option value="returned">Hoàn trả</option>
+            </select>
+          </div>
+          <div class="col-md-4 text-end">
+            <button class="btn btn-outline-primary" onclick="loadShipments()">
+              <i class="bi bi-arrow-clockwise"></i> Làm mới
+            </button>
+            <button class="btn btn-primary" onclick="createShipment()">
+              <i class="bi bi-plus-circle"></i> Tạo Vận Đơn
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipments Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Mã VĐ</th>
+                <th>Đơn Hàng</th>
+                <th>Địa Chỉ</th>
+                <th>Nhà Vận Chuyển</th>
+                <th>Trạng Thái</th>
+                <th>Ngày Tạo</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="shipmentsTableBody">
+              <tr>
+                <td colspan="7" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          id="paginationContainer"
+          class="d-flex justify-content-center align-items-center mt-3 flex-wrap gap-2"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  const PAGE_SIZE = 10;
+  let allShipments = [];
+  let filteredData = [];
+  let currentPage = 1;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadShipments();
+  });
+
+  async function loadShipments() {
+    try {
+      const res = await axios.get("/api/shipments/");
+      allShipments = res.data;
+      updateStatistics(allShipments);
+      applyFiltersAndSearch();
+    } catch (error) {
+      console.error("Error loading shipments:", error);
+      document.getElementById("shipmentsTableBody").innerHTML = `
+        <tr><td colspan="7" class="text-center text-danger">Không thể tải danh sách vận đơn</td></tr>
+      `;
+    }
+  }
+
+  function applyFiltersAndSearch() {
+    const term = document
+      .getElementById("searchInput")
+      .value.toLowerCase()
+      .trim();
+    const status = document.getElementById("filterStatus").value;
+    filteredData = allShipments.filter((s) => {
+      if (
+        term &&
+        !s.id.toString().includes(term) &&
+        !(s.order_id && s.order_id.toString().includes(term)) &&
+        !(s.address && s.address.toLowerCase().includes(term)) &&
+        !(s.carrier && s.carrier.toLowerCase().includes(term))
+      )
+        return false;
+      if (status && s.status !== status) return false;
+      return true;
+    });
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    displayShipments(filteredData.slice(start, start + PAGE_SIZE));
+    renderPagination(filteredData.length);
+  }
+
+  function displayShipments(shipments) {
+    const tbody = document.getElementById("shipmentsTableBody");
+    if (shipments.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="text-center">Không có vận đơn nào</td></tr>';
+      return;
+    }
+    let html = "";
+    shipments.forEach((shipment) => {
+      const statusBadge =
+        {
+          preparing: '<span class="badge bg-warning">Đang chuẩn bị</span>',
+          shipping: '<span class="badge bg-primary">Đang giao</span>',
+          delivered: '<span class="badge bg-success">Đã giao</span>',
+          returned: '<span class="badge bg-danger">Hoàn trả</span>',
+        }[shipment.status] || '<span class="badge bg-secondary">N/A</span>';
+      html += `
+        <tr>
+          <td>#${shipment.id}</td>
+          <td>ĐH #${shipment.order_id || "N/A"}</td>
+          <td>${shipment.address || shipment.shipping_address || "N/A"}</td>
+          <td>${shipment.carrier || shipment.status || "N/A"}</td>
+          <td>${statusBadge}</td>
+          <td>${shipment.created_at ? new Date(shipment.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="viewShipmentDetail(${shipment.id})"><i class="bi bi-eye"></i></button>
+            <button class="btn btn-sm btn-success" onclick="updateShipmentStatus(${shipment.id})"><i class="bi bi-arrow-repeat"></i></button>
+          </td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateStatistics(shipments) {
+    document.getElementById("preparingCount").textContent = shipments.filter(
+      (s) => s.status === "preparing",
+    ).length;
+    document.getElementById("shippingCount").textContent = shipments.filter(
+      (s) => s.status === "shipping",
+    ).length;
+    document.getElementById("deliveredCount").textContent = shipments.filter(
+      (s) => s.status === "delivered",
+    ).length;
+    document.getElementById("returnedCount").textContent = shipments.filter(
+      (s) => s.status === "returned",
+    ).length;
+  }
+
+  function searchShipments() {
+    applyFiltersAndSearch();
+  }
+  function filterShipments() {
+    applyFiltersAndSearch();
+  }
+
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("paginationContainer");
+    if (!container) return;
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+    let html = '<nav><ul class="pagination pagination-sm mb-0">';
+    html += `<li class="page-item ${currentPage === 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage - 1});return false;">‹</a></li>`;
+    let ell = false;
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        ell = false;
+        html += `<li class="page-item ${i === currentPage ? "active" : ""}"><a class="page-link" href="#" onclick="goToPage(${i});return false;">${i}</a></li>`;
+      } else if (!ell) {
+        ell = true;
+        html +=
+          '<li class="page-item disabled"><span class="page-link">…</span></li>';
+      }
+    }
+    html += `<li class="page-item ${currentPage === totalPages ? "disabled" : ""}"><a class="page-link" href="#" onclick="goToPage(${currentPage + 1});return false;">›</a></li>`;
+    html += `</ul></nav><small class="text-muted ms-3">Trang ${currentPage}/${totalPages} &middot; ${total} mục</small>`;
+    container.innerHTML = html;
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage();
+  }
+
+  function createShipment() {
+    showAlert("Tính năng tạo vận đơn đang được phát triển", "info");
+  }
+
+  function viewShipmentDetail(shipmentId) {
+    const shipment = allShipments.find((s) => s.id === shipmentId);
+    if (!shipment) return;
+    showAlert(`Chi tiết vận đơn #${shipmentId}`, "info");
+  }
+
+  function updateShipmentStatus(shipmentId) {
+    showAlert(
+      "Tính năng cập nhật trạng thái vận đơn đang được phát triển",
+      "info",
+    );
+  }
+</script>
+{% endblock %}

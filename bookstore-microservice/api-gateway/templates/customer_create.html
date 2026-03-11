@@ -1,0 +1,33 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Thêm Khách Hàng Mới</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="customer-name">Tên</label>
+        <input id="customer-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="customer-email">Email</label>
+        <input id="customer-email" type="email" name="email" required />
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Tạo Khách Hàng</button>
+        <a
+          href="{% url 'customer_list' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+  </article>
+</section>
+{% endblock %}

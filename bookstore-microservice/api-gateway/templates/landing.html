@@ -1,0 +1,272 @@
+{% extends "layout_base.html" %} {% block title %}BookStore - Cửa Hàng Sách
+Online{% endblock %} {% block extra_css %}
+<style>
+  .hero-section {
+    padding: 70px 0 50px;
+    text-align: center;
+  }
+  .hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: #01579b;
+    margin-bottom: 16px;
+  }
+  .hero-subtitle {
+    font-size: 1.25rem;
+    color: #0277bd;
+    margin-bottom: 36px;
+    font-weight: 500;
+  }
+  .cta-buttons .btn {
+    margin: 0 8px;
+    padding: 12px 36px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+  /* Book cards */
+  .book-card {
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+    height: 100%;
+    cursor: pointer;
+  }
+  .book-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18) !important;
+  }
+  .book-cover {
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+    width: 100%;
+    background: linear-gradient(135deg, #b3e5fc, #81d4fa);
+  }
+  .book-cover-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e0f7fa, #b3e5fc);
+    border-radius: 10px 10px 0 0;
+    font-size: 4rem;
+    color: #0288d1;
+  }
+  .book-price {
+    color: #e53935;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  /* Review cards */
+  .review-card {
+    height: 100%;
+    border-left: 4px solid #ffc107 !important;
+  }
+  .stars {
+    color: #ffc107;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+  }
+  .section-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #01579b;
+    margin-bottom: 8px;
+  }
+  .section-divider {
+    width: 60px;
+    height: 4px;
+    background: #0288d1;
+    margin: 0 auto 40px;
+    border-radius: 2px;
+  }
+  .stats-bar {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 16px;
+    padding: 32px 0;
+    margin: 48px 0;
+  }
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0288d1;
+  }
+  .stat-label {
+    color: #555;
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+  .feature-card {
+    transition:
+      transform 0.25s,
+      box-shadow 0.25s;
+    height: 100%;
+  }
+  .feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+  .no-data-msg {
+    color: #90a4ae;
+    font-style: italic;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container">
+  <!-- Hero -->
+  <div class="hero-section">
+    <div class="hero-title">
+      <i class="bi bi-book-fill text-primary"></i> BookStore
+    </div>
+    <p class="hero-subtitle">Hệ thống cửa hàng sách trực tuyến hiện đại</p>
+    <div class="cta-buttons">
+      <a href="/login/" class="btn btn-primary"
+        ><i class="bi bi-box-arrow-in-right"></i> Đăng Nhập</a
+      >
+      <a href="/register/" class="btn btn-outline-primary"
+        ><i class="bi bi-person-plus"></i> Đăng Ký</a
+      >
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="row text-center">
+      <div class="col-6 col-md-3">
+        <div class="stat-number">{{ books|length }}+</div>
+        <div class="stat-label">Đầu sách</div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-number">{{ star_reviews|length }}</div>
+        <div class="stat-label">Đánh giá 5 sao</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured Books -->
+  <div class="text-center mb-2">
+    <h2 class="section-title">
+      <i class="bi bi-grid-fill text-primary"></i> Sách Nổi Bật
+    </h2>
+    <div class="section-divider"></div>
+  </div>
+
+  {% if books %}
+  <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+    {% for book in books %}
+    <div class="col">
+      <div class="card book-card" onclick="window.location = '/login/'">
+        {% if book.image_url %}
+        <img
+          src="{{ book.image_url }}"
+          alt="{{ book.title }}"
+          class="book-cover"
+          onerror="
+            this.style.display = 'none';
+            this.nextElementSibling.style.display = 'flex';
+          "
+        />
+        <div class="book-cover-placeholder" style="display: none">
+          <i class="bi bi-book"></i>
+        </div>
+        {% else %}
+        <div class="book-cover-placeholder"><i class="bi bi-book"></i></div>
+        {% endif %}
+        <div class="card-body p-3">
+          <h6
+            class="card-title mb-1 fw-bold"
+            style="
+              font-size: 0.9rem;
+              line-height: 1.3;
+              overflow: hidden;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+            "
+          >
+            {{ book.title }}
+          </h6>
+          <p class="text-muted mb-2" style="font-size: 0.8rem">
+            {{ book.author }}
+          </p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="book-price">{{ book.price|floatformat:0 }}₫</span>
+            <span
+              class="badge bg-light text-secondary"
+              style="font-size: 0.75rem"
+            >
+              <i class="bi bi-box-seam"></i> {{ book.stock }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-center no-data-msg mb-5">
+    <i class="bi bi-info-circle"></i> Chưa có sách nào trong hệ thống.
+  </p>
+  {% endif %}
+
+  <!-- 5-Star Reviews -->
+  <div class="text-center mb-2">
+    <h2 class="section-title">
+      <i class="bi bi-star-fill text-warning"></i> Đánh Giá 5 Sao
+    </h2>
+    <div class="section-divider" style="background: #ffc107"></div>
+  </div>
+
+  {% if star_reviews %}
+  <div class="row row-cols-1 row-cols-md-3 g-3 mb-5">
+    {% for review in star_reviews %}
+    <div class="col">
+      <div class="card review-card p-3">
+        <div class="stars mb-2">★★★★★</div>
+        <p class="mb-2" style="font-size: 0.9rem; color: #444">
+          {% if review.comment %}"{{ review.comment }}"{% else %}<em
+            class="no-data-msg"
+            >Không có nội dung</em
+          >{% endif %}
+        </p>
+        <div class="mt-auto">
+          <small class="text-muted"
+            ><i class="bi bi-book"></i> {{ review.book_title }}</small
+          ><br />
+          <small class="text-muted"
+            ><i class="bi bi-person-circle"></i> Khách hàng #{{
+            review.customer_id }}</small
+          >
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-center no-data-msg mb-5">
+    <i class="bi bi-info-circle"></i> Chưa có đánh giá 5 sao nào.
+  </p>
+  {% endif %}
+
+  <!-- CTA bottom -->
+  <div class="text-center mb-5 py-4">
+    <h4 class="fw-bold mb-2" style="color: #01579b">Sẵn sàng bắt đầu?</h4>
+    <p class="text-muted mb-4">
+      Đăng nhập ngay để trải nghiệm hệ thống đầy đủ tính năng
+    </p>
+    <div class="cta-buttons">
+      <a href="/login/" class="btn btn-primary btn-lg"
+        ><i class="bi bi-box-arrow-in-right"></i> Đăng Nhập Ngay</a
+      >
+      <a href="/register/" class="btn btn-outline-primary btn-lg"
+        ><i class="bi bi-person-plus"></i> Tạo Tài Khoản</a
+      >
+    </div>
+  </div>
+</div>
+{% endblock %}

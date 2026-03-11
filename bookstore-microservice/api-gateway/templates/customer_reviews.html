@@ -1,0 +1,178 @@
+{% extends 'layout_base.html' %} {% block title %}Đánh Giá - BookStore
+{%endblock %} {% block content %}
+<div class="row">
+  <div class="col-md-3 mb-4">
+    <div class="card customer-sidebar">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-circle text-primary"></i>
+          Menu Khách Hàng
+        </h5>
+        <nav class="nav flex-column customer-menu">
+          <a class="nav-link" href="/customer/dashboard/"
+            ><i class="bi bi-speedometer2"></i> Dashboard</a
+          >
+          <a class="nav-link" href="/customer/products/"
+            ><i class="bi bi-book"></i> Sản Phẩm</a
+          >
+          <a class="nav-link" href="/customer/cart/"
+            ><i class="bi bi-cart"></i> Giỏ Hàng</a
+          >
+          <a class="nav-link" href="/customer/orders/"
+            ><i class="bi bi-receipt"></i> Đơn Hàng</a
+          >
+          <a class="nav-link active" href="/customer/reviews/"
+            ><i class="bi bi-star"></i> Đánh Giá</a
+          >
+          <a class="nav-link" href="/customer/recommendations/"
+            ><i class="bi bi-lightbulb"></i> Gợi Ý AI</a
+          >
+          <a class="nav-link" href="/customer/profile/"
+            ><i class="bi bi-person"></i> Tài Khoản</a
+          >
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-star-fill"></i> Đánh Giá Của Tôi
+    </h2>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Viết Đánh Giá</h5>
+      </div>
+      <div class="card-body">
+        <form id="reviewForm" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Chọn sách</label>
+            <select id="bookId" class="form-select" required>
+              <option value="">-- Đang tải sách... --</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Điểm</label>
+            <select id="rating" class="form-select" required>
+              <option value="5">5 sao</option>
+              <option value="4">4 sao</option>
+              <option value="3">3 sao</option>
+              <option value="2">2 sao</option>
+              <option value="1">1 sao</option>
+            </select>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Nội dung</label>
+            <textarea
+              id="comment"
+              class="form-control"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+          <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-send"></i> Gửi đánh giá
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Danh Sách Đánh Giá</h5>
+      </div>
+      <div class="card-body">
+        <div id="reviewsContainer">Đang tải...</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allReviews = [];
+
+  document.addEventListener('DOMContentLoaded', async function() {
+      await loadBooks();
+      await loadReviews();
+      document.getElementById('reviewForm').addEventListener('submit', submitReview);
+  });
+
+  async function loadBooks() {
+      try {
+          const res = await axios.get('/api/books/');
+          const select = document.getElementById('bookId');
+          select.innerHTML = '<option value="">-- Chọn sách --</option>';
+          (res.data || []).forEach(book => {
+              const opt = document.createElement('option');
+              opt.value = book.id;
+              opt.textContent = `${book.title}${book.author ? ' — ' + book.author : ''}`;
+              select.appendChild(opt);
+          });
+      } catch (error) {
+          console.error('Error loading books:', error);
+          document.getElementById('bookId').innerHTML = '<option value="">-- Không thể tải sách --</option>';
+      }
+  }
+
+  async function loadReviews() {
+      try {
+          const customerId = {{ request.session.customer_id|default:1 }};
+          const [reviewsRes, booksRes] = await Promise.all([
+              axios.get('/api/reviews/'),
+              axios.get('/api/books/').catch(() => ({ data: [] }))
+          ]);
+          const booksMap = {};
+          (booksRes.data || []).forEach(b => { booksMap[b.id] = b.title; });
+
+          allReviews = (reviewsRes.data || []).filter(r => Number(r.customer_id) === Number(customerId));
+
+          if (allReviews.length === 0) {
+              document.getElementById('reviewsContainer').innerHTML = '<p class="text-muted">Bạn chưa có đánh giá nào.</p>';
+              return;
+          }
+
+          let html = '<div class="table-responsive"><table class="table table-hover">';
+          html += '<thead><tr><th>ID</th><th>Sách</th><th>Điểm</th><th>Nội dung</th><th>Ngày</th></tr></thead><tbody>';
+          allReviews.forEach(rv => {
+              const bookTitle = booksMap[rv.product_id] || `#${rv.product_id}`;
+              html += `
+                <tr>
+                  <td>#${rv.id}</td>
+                  <td>${bookTitle}</td>
+                  <td>${'★'.repeat(Number(rv.rating || 0))}</td>
+                  <td>${rv.comment || ''}</td>
+                  <td>${rv.created_at ? new Date(rv.created_at).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                </tr>
+              `;
+          });
+          html += '</tbody></table></div>';
+          document.getElementById('reviewsContainer').innerHTML = html;
+      } catch (error) {
+          console.error('Error loading reviews:', error);
+          document.getElementById('reviewsContainer').innerHTML = '<p class="text-danger">Không thể tải đánh giá</p>';
+      }
+  }
+
+  async function submitReview(e) {
+      e.preventDefault();
+      try {
+          const customerId = {{ request.session.customer_id|default:1 }};
+          await axios.post('/api/reviews/', {
+              customer_id: customerId,
+              product_id: Number(document.getElementById('bookId').value),
+              rating: Number(document.getElementById('rating').value),
+              comment: document.getElementById('comment').value
+          });
+          showAlert('Đánh giá thành công!', 'success');
+          document.getElementById('reviewForm').reset();
+          await loadReviews();
+      } catch (error) {
+          console.error('Error creating review:', error);
+          showAlert('Không thể gửi đánh giá', 'danger');
+      }
+  }
+</script>
+{% endblock %}

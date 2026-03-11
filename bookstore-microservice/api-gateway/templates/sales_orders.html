@@ -1,0 +1,278 @@
+{% extends 'layout_base.html' %} {% block title %}Xử Lý Đơn Hàng - Nhân Viên Bán
+Hàng{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-badge text-success"></i>
+          Nhân Viên Bán Hàng
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/sales/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link active" href="/staff/sales/orders/">
+            <i class="bi bi-receipt"></i> Xử Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/staff/sales/customers/">
+            <i class="bi bi-people"></i> Hỗ Trợ Khách Hàng
+          </a>
+          <a class="nav-link" href="/staff/sales/reviews/">
+            <i class="bi bi-chat-left-text"></i> Kiểm Duyệt Đánh Giá
+          </a>
+        </nav>
+        <hr />
+        <a href="/logout/" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-receipt"></i> Xử Lý Đơn Hàng
+    </h2>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-5 mb-2">
+            <select
+              id="statusFilter"
+              class="form-select"
+              onchange="filterOrders()"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="pending">Chờ xác nhận</option>
+              <option value="confirmed">Đã xác nhận</option>
+              <option value="shipping">Đang giao</option>
+              <option value="delivered">Đã giao</option>
+              <option value="cancelled">Đã hủy</option>
+            </select>
+          </div>
+          <div class="col-md-5 mb-2">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm theo ID đơn hàng..."
+              oninput="filterOrders()"
+            />
+          </div>
+          <div class="col-md-2 mb-2">
+            <button class="btn btn-primary w-100" onclick="loadOrders()">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Danh Sách Đơn Hàng</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Khách Hàng</th>
+                <th>Tổng Tiền</th>
+                <th>Ngày Đặt</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr>
+                <td colspan="6" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chi Tiết Đơn Hàng</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body" id="orderDetailBody">Đang tải...</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Đóng
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          id="confirmOrderBtn"
+          style="display: none"
+          onclick="confirmOrder()"
+        >
+          <i class="bi bi-check-lg"></i> Xác Nhận Đơn
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          id="cancelOrderBtn"
+          style="display: none"
+          onclick="cancelOrder()"
+        >
+          <i class="bi bi-x-lg"></i> Hủy Đơn
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allOrders = [];
+  let currentOrderId = null;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadOrders();
+  });
+
+  async function loadOrders() {
+    try {
+      const res = await axios.get("/api/orders/");
+      allOrders = res.data || [];
+      filterOrders();
+    } catch (e) {
+      document.getElementById("ordersTableBody").innerHTML =
+        '<tr><td colspan="6" class="text-center text-danger">Không thể tải đơn hàng</td></tr>';
+    }
+  }
+
+  function filterOrders() {
+    const status = document.getElementById("statusFilter").value;
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    let filtered = allOrders;
+    if (status !== "all")
+      filtered = filtered.filter((o) => o.status === status);
+    if (search)
+      filtered = filtered.filter((o) => o.id?.toString().includes(search));
+    displayOrders(filtered);
+  }
+
+  const statusConfig = {
+    pending: { color: "warning", text: "Chờ xác nhận" },
+    confirmed: { color: "info", text: "Đã xác nhận" },
+    shipping: { color: "primary", text: "Đang giao" },
+    delivered: { color: "success", text: "Đã giao" },
+    cancelled: { color: "danger", text: "Đã hủy" },
+  };
+
+  function displayOrders(orders) {
+    const tbody = document.getElementById("ordersTableBody");
+    if (orders.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="text-center">Không có đơn hàng nào</td></tr>';
+      return;
+    }
+    tbody.innerHTML = orders
+      .map((o) => {
+        const st = statusConfig[o.status] || {
+          color: "secondary",
+          text: o.status,
+        };
+        return `<tr>
+        <td>#${o.id}</td>
+        <td>${o.customer_id || "N/A"}</td>
+        <td>${o.total_price ? parseInt(o.total_price).toLocaleString("vi-VN") + "₫" : "N/A"}</td>
+        <td>${o.created_at ? new Date(o.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
+        <td><span class="badge bg-${st.color}">${st.text}</span></td>
+        <td><button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${o.id})"><i class="bi bi-eye"></i> Chi tiết</button></td>
+      </tr>`;
+      })
+      .join("");
+  }
+
+  async function viewOrder(id) {
+    currentOrderId = id;
+    const modal = new bootstrap.Modal(
+      document.getElementById("orderDetailModal"),
+    );
+    const body = document.getElementById("orderDetailBody");
+    const confirmBtn = document.getElementById("confirmOrderBtn");
+    const cancelBtn = document.getElementById("cancelOrderBtn");
+    body.innerHTML = "Đang tải...";
+    confirmBtn.style.display = "none";
+    cancelBtn.style.display = "none";
+    modal.show();
+    try {
+      const res = await axios.get(`/api/orders/${id}/`);
+      const o = res.data;
+      const st = statusConfig[o.status] || {
+        color: "secondary",
+        text: o.status,
+      };
+      body.innerHTML = `
+        <div class="row">
+          <div class="col-md-6"><strong>ID:</strong> #${o.id}</div>
+          <div class="col-md-6"><strong>Khách hàng:</strong> ${o.customer_id || "N/A"}</div>
+          <div class="col-md-6 mt-2"><strong>Tổng tiền:</strong> ${o.total_price ? parseInt(o.total_price).toLocaleString("vi-VN") + "₫" : "N/A"}</div>
+          <div class="col-md-6 mt-2"><strong>Trạng thái:</strong> <span class="badge bg-${st.color}">${st.text}</span></div>
+          <div class="col-md-6 mt-2"><strong>Ngày đặt:</strong> ${o.created_at ? new Date(o.created_at).toLocaleString("vi-VN") : "N/A"}</div>
+          <div class="col-md-6 mt-2"><strong>Địa chỉ:</strong> ${o.address || "N/A"}</div>
+        </div>`;
+      if (o.status === "pending") {
+        confirmBtn.style.display = "inline-block";
+        cancelBtn.style.display = "inline-block";
+      }
+    } catch (e) {
+      body.innerHTML =
+        '<p class="text-danger">Không thể tải chi tiết đơn hàng</p>';
+    }
+  }
+
+  async function confirmOrder() {
+    if (!currentOrderId) return;
+    try {
+      await axios.patch(`/api/orders/${currentOrderId}/`, {
+        status: "confirmed",
+      });
+      bootstrap.Modal.getInstance(
+        document.getElementById("orderDetailModal"),
+      ).hide();
+      await loadOrders();
+    } catch (e) {
+      alert("Lỗi: " + (e.response?.data?.detail || e.message));
+    }
+  }
+
+  async function cancelOrder() {
+    if (!currentOrderId) return;
+    if (!confirm("Bạn có chắc muốn hủy đơn hàng này?")) return;
+    try {
+      await axios.patch(`/api/orders/${currentOrderId}/`, {
+        status: "cancelled",
+      });
+      bootstrap.Modal.getInstance(
+        document.getElementById("orderDetailModal"),
+      ).hide();
+      await loadOrders();
+    } catch (e) {
+      alert("Lỗi: " + (e.response?.data?.detail || e.message));
+    }
+  }
+</script>
+{% endblock %}

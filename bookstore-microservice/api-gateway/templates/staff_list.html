@@ -1,0 +1,54 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      "
+    >
+      <h2>Danh Sách Nhân Viên</h2>
+      {% if can_create %}
+      <a
+        href="{% url 'staff_create' %}"
+        class="btn-primary"
+        style="
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 8px;
+        "
+        >+ Tạo Nhân Viên</a
+      >
+      {% endif %}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên</th>
+          <th>Email</th>
+          <th>Vai trò</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in staffs %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td>{{ s.role }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">Không tìm thấy nhân viên nào.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

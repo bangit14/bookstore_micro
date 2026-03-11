@@ -1,0 +1,54 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      "
+    >
+      <h2>Danh Sách Đánh Giá</h2>
+      <a
+        href="{% url 'review_create' %}"
+        class="btn-primary"
+        style="
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 8px;
+        "
+        >+ Viết Đánh Giá</a
+      >
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Khách hàng</th>
+          <th>Sản phẩm</th>
+          <th>Điểm</th>
+          <th>Bình luận</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rv in reviews %}
+        <tr>
+          <td>{{ rv.id }}</td>
+          <td>{{ rv.customer_id }}</td>
+          <td>{{ rv.product_id }}</td>
+          <td>{{ rv.rating }}/5</td>
+          <td>{{ rv.comment }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">Chưa có đánh giá nào.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

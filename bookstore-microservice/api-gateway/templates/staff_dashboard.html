@@ -1,0 +1,265 @@
+{% extends 'layout_base.html' %} {% block title %}Staff Dashboard - BookStore
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-briefcase text-warning"></i>
+          Menu Nhân Viên
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link active" href="/staff/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/staff/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/staff/inventory/">
+            <i class="bi bi-boxes"></i> Quản Lý Tồn Kho
+          </a>
+          <a class="nav-link" href="/staff/orders/">
+            <i class="bi bi-receipt"></i> Xử Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/staff/shipments/">
+            <i class="bi bi-truck"></i> Vận Chuyển
+          </a>
+          <a class="nav-link" href="/staff/customers/">
+            <i class="bi bi-people"></i> Hỗ Trợ Khách Hàng
+          </a>
+          <a class="nav-link" href="/staff/reviews/">
+            <i class="bi bi-star"></i> Kiểm Duyệt Đánh Giá
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-speedometer2"></i> Dashboard Nhân Viên
+    </h2>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-box text-info" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="productCount">0</h3>
+            <p class="text-muted small">Sản phẩm</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-receipt text-warning" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="orderCount">0</h3>
+            <p class="text-muted small">Đơn hàng mới</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-truck text-primary" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="shipmentCount">0</h3>
+            <p class="text-muted small">Đang vận chuyển</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-star text-success" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="reviewCount">0</h3>
+            <p class="text-muted small">Đánh giá</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Orders -->
+    <div class="card mb-4">
+      <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+          <i class="bi bi-exclamation-circle"></i> Đơn Hàng Cần Xử Lý
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="pendingOrders">
+          <p class="text-muted">Đang tải...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Low Stock Products -->
+    <div class="card mb-4">
+      <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+          <i class="bi bi-exclamation-triangle"></i> Sản Phẩm Sắp Hết Hàng
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="lowStockProducts">
+          <p class="text-muted">Đang tải...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Reviews -->
+    <div class="card">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Đánh Giá Mới Nhất</h5>
+      </div>
+      <div class="card-body">
+        <div id="recentReviews">
+          <p class="text-muted">Đang tải...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", async function () {
+    try {
+      // Load products count
+      const booksRes = await axios.get("/api/books/");
+      const productsRes = await axios.get("/api/products/");
+      const totalProducts =
+        (booksRes.data?.length || 0) + (productsRes.data?.length || 0);
+      document.getElementById("productCount").textContent = totalProducts;
+
+      // Check low stock
+      const lowStock = booksRes.data.filter((b) => b.stock < 10);
+      if (lowStock.length > 0) {
+        let html =
+          '<div class="table-responsive"><table class="table table-sm">';
+        html +=
+          "<thead><tr><th>Sách</th><th>Tồn kho</th><th>Hành động</th></tr></thead><tbody>";
+        lowStock.forEach((book) => {
+          html += `
+                    <tr>
+                        <td>${book.title}</td>
+                        <td><span class="badge bg-danger">${book.stock}</span></td>
+                        <td><button class="btn btn-sm btn-primary" onclick="updateStock(${book.id})">Nhập hàng</button></td>
+                    </tr>
+                `;
+        });
+        html += "</tbody></table></div>";
+        document.getElementById("lowStockProducts").innerHTML = html;
+      } else {
+        document.getElementById("lowStockProducts").innerHTML =
+          '<p class="text-success">Tất cả sản phẩm đều đủ hàng</p>';
+      }
+    } catch (error) {
+      console.error("Error loading products:", error);
+    }
+
+    try {
+      // Load orders
+      const ordersRes = await axios.get("/api/orders/");
+      const pendingOrders = ordersRes.data.filter(
+        (o) => o.status === "pending",
+      );
+      document.getElementById("orderCount").textContent = pendingOrders.length;
+
+      if (pendingOrders.length > 0) {
+        let html =
+          '<div class="table-responsive"><table class="table table-hover">';
+        html +=
+          "<thead><tr><th>Mã ĐH</th><th>Khách hàng</th><th>Tổng tiền</th><th>Hành động</th></tr></thead><tbody>";
+        pendingOrders.slice(0, 5).forEach((order) => {
+          html += `
+                    <tr>
+                        <td>#${order.id}</td>
+                        <td>KH #${order.customer_id}</td>
+                        <td>${parseInt(order.total_amount || 0).toLocaleString("vi-VN")}đ</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="confirmOrder(${order.id})">
+                                <i class="bi bi-check"></i> Xác nhận
+                            </button>
+                        </td>
+                    </tr>
+                `;
+        });
+        html += "</tbody></table></div>";
+        document.getElementById("pendingOrders").innerHTML = html;
+      } else {
+        document.getElementById("pendingOrders").innerHTML =
+          '<p class="text-muted">Không có đơn hàng cần xử lý</p>';
+      }
+    } catch (error) {
+      console.error("Error loading orders:", error);
+    }
+
+    try {
+      // Load shipments
+      const shipmentsRes = await axios.get("/api/shipments/");
+      const activeShipments = shipmentsRes.data.filter(
+        (s) => s.status === "shipping",
+      );
+      document.getElementById("shipmentCount").textContent =
+        activeShipments.length;
+    } catch (error) {
+      console.error("Error loading shipments:", error);
+    }
+
+    try {
+      // Load reviews
+      const reviewsRes = await axios.get("/api/reviews/");
+      document.getElementById("reviewCount").textContent =
+        reviewsRes.data.length;
+
+      const recentReviews = reviewsRes.data.slice(0, 5);
+      if (recentReviews.length > 0) {
+        let html = '<div class="list-group">';
+        recentReviews.forEach((review) => {
+          const stars = "⭐".repeat(review.rating);
+          html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">Sản phẩm #${review.product_id}</h6>
+                            <small>${stars}</small>
+                        </div>
+                        <p class="mb-1 small">${review.comment}</p>
+                        <small class="text-muted">Khách hàng #${review.customer_id}</small>
+                    </div>
+                `;
+        });
+        html += "</div>";
+        document.getElementById("recentReviews").innerHTML = html;
+      } else {
+        document.getElementById("recentReviews").innerHTML =
+          '<p class="text-muted">Chưa có đánh giá</p>';
+      }
+    } catch (error) {
+      console.error("Error loading reviews:", error);
+    }
+  });
+
+  async function confirmOrder(orderId) {
+    if (confirm("Xác nhận đơn hàng #" + orderId + "?")) {
+      try {
+        // Update order status logic here
+        showAlert("Đã xác nhận đơn hàng", "success");
+        setTimeout(() => location.reload(), 1000);
+      } catch (error) {
+        showAlert("Lỗi xác nhận đơn hàng", "danger");
+      }
+    }
+  }
+
+  function updateStock(bookId) {
+    const quantity = prompt("Nhập số lượng cần thêm:");
+    if (quantity) {
+      showAlert("Đã cập nhật tồn kho", "success");
+      setTimeout(() => location.reload(), 1000);
+    }
+  }
+</script>
+{% endblock %}

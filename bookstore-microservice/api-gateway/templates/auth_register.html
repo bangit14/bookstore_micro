@@ -1,46 +1,115 @@
-{% extends "base.html" %} {% block content %}
-<section class="grid" style="max-width: 700px; margin: 24px auto 0">
-  <article class="card">
-    <h2>Register</h2>
-    <form method="post" class="grid two">
-      {% csrf_token %}
-      <div>
-        <label for="register-username">Username</label>
-        <input id="register-username" type="text" name="username" required />
+{% extends "layout_base.html" %} {% block title %}Đăng Ký - BookStore
+{% endblock%} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-lg">
+      <div class="card-body p-5">
+        <div class="text-center mb-4">
+          <i
+            class="bi bi-person-plus-fill text-primary"
+            style="font-size: 4rem"
+          ></i>
+          <h2 class="mt-3 fw-bold" style="color: #01579b">Đăng Ký Tài Khoản</h2>
+          <p class="text-muted">Tạo tài khoản mới tại BookStore</p>
+        </div>
+
+        {% if messages %} {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        {% endfor %} {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="username" class="form-label fw-semibold"
+                >Tên đăng nhập</label
+              >
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="bi bi-person"></i
+                ></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  name="username"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="email" class="form-label fw-semibold">Email</label>
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="bi bi-envelope"></i
+                ></span>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="name" class="form-label fw-semibold">Họ và tên</label>
+            <div class="input-group">
+              <span class="input-group-text"
+                ><i class="bi bi-person-badge"></i
+              ></span>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label for="password" class="form-label fw-semibold"
+              >Mật khẩu</label
+            >
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                minlength="6"
+                required
+              />
+            </div>
+            <div class="form-text">Tối thiểu 6 ký tự</div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+            <i class="bi bi-person-plus"></i> Tạo Tài Khoản
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <p class="text-muted">
+            Đã có tài khoản?
+            <a href="/login/" class="fw-semibold text-decoration-none"
+              >Đăng nhập ngay</a
+            >
+          </p>
+        </div>
       </div>
-      <div>
-        <label for="register-email">Email</label>
-        <input id="register-email" type="email" name="email" required />
-      </div>
-      <div>
-        <label for="register-name">Full Name</label>
-        <input id="register-name" type="text" name="name" required />
-      </div>
-      <div>
-        <label for="register-role">Role</label>
-        <select id="register-role" name="role">
-          <option value="customer">customer</option>
-          <option value="staff">staff</option>
-          <option value="manager">manager</option>
-        </select>
-      </div>
-      <div style="grid-column: 1 / -1">
-        <label for="register-password">Password</label>
-        <input
-          id="register-password"
-          type="password"
-          name="password"
-          minlength="6"
-          required
-        />
-      </div>
-      <div style="grid-column: 1 / -1">
-        <button type="submit">Create Account</button>
-      </div>
-    </form>
-    <p class="hint" style="margin-top: 10px">
-      Already registered? <a href="/login/">Back to login</a>.
-    </p>
-  </article>
-</section>
+    </div>
+  </div>
+</div>
 {% endblock %}

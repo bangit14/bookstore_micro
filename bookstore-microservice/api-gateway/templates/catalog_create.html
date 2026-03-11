@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Thêm Sản Phẩm Mới</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="product-name">Tên sản phẩm</label>
+        <input id="product-name" type="text" name="name" required />
+      </div>
+      <div>
+        <label for="product-desc">Mô tả</label>
+        <textarea id="product-desc" name="description" rows="3"></textarea>
+      </div>
+      <div>
+        <label for="product-price">Giá</label>
+        <input
+          id="product-price"
+          type="number"
+          step="0.01"
+          name="price"
+          required
+        />
+      </div>
+      <div>
+        <label for="product-stock">Tồn kho</label>
+        <input
+          id="product-stock"
+          type="number"
+          name="stock"
+          value="0"
+          required
+        />
+      </div>
+      <div>
+        <label for="product-image">URL hình ảnh</label>
+        <input id="product-image" type="url" name="image_url" />
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Tạo Sản Phẩm</button>
+        <a
+          href="{% url 'catalog_list' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+  </article>
+</section>
+{% endblock %}

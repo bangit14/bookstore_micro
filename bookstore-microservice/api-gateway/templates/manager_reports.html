@@ -1,0 +1,430 @@
+{% extends 'layout_base.html' %} {% block title %}Báo Cáo - Manager
+{% endblock%} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link active" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-graph-up-arrow"></i> Thống Kê & Báo Cáo
+    </h2>
+
+    <!-- Time Range Selector -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <select id="timeRange" class="form-select" onchange="loadReports()">
+              <option value="7">7 ngày qua</option>
+              <option value="30" selected>30 ngày qua</option>
+              <option value="90">90 ngày qua</option>
+              <option value="365">12 tháng qua</option>
+            </select>
+          </div>
+          <div class="col-md-9 text-end">
+            <button class="btn btn-primary" onclick="exportReport()">
+              <i class="bi bi-download"></i> Xuất Báo Cáo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue & Orders Overview -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <i
+              class="bi bi-cash-coin text-success"
+              style="font-size: 2.5rem"
+            ></i>
+            <h4 class="mt-2" id="totalRevenue">0đ</h4>
+            <p class="text-muted small mb-0">Tổng doanh thu</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <i
+              class="bi bi-receipt-cutoff text-warning"
+              style="font-size: 2.5rem"
+            ></i>
+            <h4 class="mt-2" id="totalOrders">0</h4>
+            <p class="text-muted small mb-0">Tổng đơn hàng</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <i
+              class="bi bi-people-fill text-info"
+              style="font-size: 2.5rem"
+            ></i>
+            <h4 class="mt-2" id="totalCustomers">0</h4>
+            <p class="text-muted small mb-0">Khách hàng</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <i
+              class="bi bi-cart-check-fill text-primary"
+              style="font-size: 2.5rem"
+            ></i>
+            <h4 class="mt-2" id="avgOrderValue">0đ</h4>
+            <p class="text-muted small mb-0">Giá trị TB/đơn</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Biểu Đồ Doanh Thu</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="revenueChart" height="80"></canvas>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Orders Status -->
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+              <i class="bi bi-pie-chart"></i> Trạng Thái Đơn Hàng
+            </h5>
+          </div>
+          <div class="card-body">
+            <canvas id="ordersStatusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Products -->
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-trophy"></i> Sản Phẩm Bán Chạy</h5>
+          </div>
+          <div class="card-body">
+            <div id="topProducts">
+              <p class="text-muted">Đang tải...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Reports -->
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-table"></i> Chi Tiết Báo Cáo</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Ngày</th>
+                <th>Đơn Hàng</th>
+                <th>Doanh Thu</th>
+                <th>Khách Hàng Mới</th>
+                <th>Giá Trị TB</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <tr>
+                <td colspan="5" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let revenueChartInstance = null;
+  let statusChartInstance = null;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadReports();
+  });
+
+  async function loadReports() {
+    try {
+      // Load all data
+      const [ordersRes, paymentsRes, customersRes, booksRes] =
+        await Promise.all([
+          axios.get("/api/orders/"),
+          axios.get("/api/payments/"),
+          axios.get("/api/customers/"),
+          axios.get("/api/books/"),
+        ]);
+
+      const orders = ordersRes.data;
+      const payments = paymentsRes.data;
+      const customers = customersRes.data;
+      const books = booksRes.data;
+
+      // Calculate statistics
+      const successPayments = payments.filter((p) => p.status === "success");
+      const totalRevenue = successPayments.reduce(
+        (sum, p) => sum + parseFloat(p.amount || 0),
+        0,
+      );
+      const totalOrders = orders.length;
+      const totalCustomers = customers.length;
+      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+      // Update stats cards
+      document.getElementById("totalRevenue").textContent =
+        Math.round(totalRevenue).toLocaleString("vi-VN") + "đ";
+      document.getElementById("totalOrders").textContent = totalOrders;
+      document.getElementById("totalCustomers").textContent = totalCustomers;
+      document.getElementById("avgOrderValue").textContent =
+        Math.round(avgOrderValue).toLocaleString("vi-VN") + "đ";
+
+      // Create revenue chart
+      createRevenueChart(payments);
+
+      // Create orders status chart
+      createOrdersStatusChart(orders);
+
+      // Show top products
+      displayTopProducts(books);
+
+      // Create detailed report table
+      createReportTable(orders, payments);
+    } catch (error) {
+      console.error("Error loading reports:", error);
+      showAlert("Không thể tải báo cáo", "danger");
+    }
+  }
+
+  function createRevenueChart(payments) {
+    const ctx = document.getElementById("revenueChart").getContext("2d");
+
+    // Group by day
+    const dailyRevenue = {};
+    payments
+      .filter((p) => p.status === "success")
+      .forEach((payment) => {
+        const date = new Date(
+          payment.created_at || Date.now(),
+        ).toLocaleDateString("vi-VN");
+        dailyRevenue[date] =
+          (dailyRevenue[date] || 0) + parseFloat(payment.amount || 0);
+      });
+
+    const labels = Object.keys(dailyRevenue).slice(-30);
+    const data = labels.map((date) => dailyRevenue[date]);
+
+    if (revenueChartInstance) {
+      revenueChartInstance.destroy();
+    }
+
+    revenueChartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Doanh thu (VNĐ)",
+            data: data,
+            borderColor: "rgb(75, 192, 192)",
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            tension: 0.1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+        },
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  function createOrdersStatusChart(orders) {
+    const ctx = document.getElementById("ordersStatusChart").getContext("2d");
+
+    // Count by status
+    const statusCount = {
+      pending: 0,
+      paid: 0,
+      shipping: 0,
+      delivered: 0,
+      cancelled: 0,
+    };
+
+    orders.forEach((order) => {
+      if (statusCount.hasOwnProperty(order.status)) {
+        statusCount[order.status]++;
+      }
+    });
+
+    if (statusChartInstance) {
+      statusChartInstance.destroy();
+    }
+
+    statusChartInstance = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: [
+          "Chờ xử lý",
+          "Đã thanh toán",
+          "Đang giao",
+          "Đã giao",
+          "Đã hủy",
+        ],
+        datasets: [
+          {
+            data: [
+              statusCount.pending,
+              statusCount.paid,
+              statusCount.shipping,
+              statusCount.delivered,
+              statusCount.cancelled,
+            ],
+            backgroundColor: [
+              "#ffc107",
+              "#17a2b8",
+              "#007bff",
+              "#28a745",
+              "#dc3545",
+            ],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom" },
+        },
+      },
+    });
+  }
+
+  function displayTopProducts(books) {
+    const topBooks = books.sort((a, b) => b.stock - a.stock).slice(0, 5);
+
+    let html = '<div class="list-group">';
+    topBooks.forEach((book, index) => {
+      html += `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-primary rounded-pill me-2">${index + 1}</span>
+                    ${book.title}
+                </div>
+                <span class="badge bg-success">${book.stock} bán</span>
+            </div>
+        `;
+    });
+    html += "</div>";
+
+    document.getElementById("topProducts").innerHTML = html;
+  }
+
+  function createReportTable(orders, payments) {
+    // Group by day
+    const dailyReport = {};
+
+    orders.forEach((order) => {
+      const date = new Date(order.created_at).toLocaleDateString("vi-VN");
+      if (!dailyReport[date]) {
+        dailyReport[date] = { orders: 0, revenue: 0, customers: new Set() };
+      }
+      dailyReport[date].orders++;
+      dailyReport[date].customers.add(order.customer_id);
+    });
+
+    payments
+      .filter((p) => p.status === "success")
+      .forEach((payment) => {
+        const date = new Date(payment.created_at).toLocaleDateString("vi-VN");
+        if (dailyReport[date]) {
+          dailyReport[date].revenue += parseFloat(payment.amount || 0);
+        }
+      });
+
+    const dates = Object.keys(dailyReport).slice(-10);
+    let html = "";
+
+    dates.forEach((date) => {
+      const report = dailyReport[date];
+      const avgValue = report.orders > 0 ? report.revenue / report.orders : 0;
+
+      html += `
+            <tr>
+                <td>${date}</td>
+                <td>${report.orders}</td>
+                <td>${Math.round(report.revenue).toLocaleString("vi-VN")}đ</td>
+                <td>${report.customers.size}</td>
+                <td>${Math.round(avgValue).toLocaleString("vi-VN")}đ</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("reportTableBody").innerHTML =
+      html ||
+      '<tr><td colspan="5" class="text-center">Không có dữ liệu</td></tr>';
+  }
+
+  function exportReport() {
+    showAlert("Tính năng xuất báo cáo đang được phát triển", "info");
+  }
+</script>
+{% endblock %}

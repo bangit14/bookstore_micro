@@ -1,0 +1,62 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      "
+    >
+      <h2>Danh Mục Sản Phẩm</h2>
+      {% if can_create %}
+      <a
+        href="{% url 'catalog_create' %}"
+        class="btn-primary"
+        style="
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 8px;
+        "
+        >+ Thêm Sản Phẩm</a
+      >
+      {% endif %}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên</th>
+          <th>Mô tả</th>
+          <th>Giá</th>
+          <th>Tồn kho</th>
+          <th>URL Hình ảnh</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.description|truncatewords:10 }}</td>
+          <td>${{ p.price }}</td>
+          <td>{{ p.stock }}</td>
+          <td>
+            {% if p.image_url %}
+            <a href="{{ p.image_url }}" target="_blank">Xem</a>
+            {% else %} - {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">Không tìm thấy sản phẩm nào.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

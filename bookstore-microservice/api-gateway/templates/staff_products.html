@@ -1,0 +1,372 @@
+{% extends 'layout_base.html' %} {% block title %}Quản Lý Sản Phẩm - Staff
+{%endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-badge text-success"></i>
+          Menu Nhân Viên
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link active" href="/staff/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/staff/inventory/">
+            <i class="bi bi-boxes"></i> Tồn Kho
+          </a>
+          <a class="nav-link" href="/staff/orders/">
+            <i class="bi bi-receipt"></i> Đơn Hàng
+          </a>
+          <a class="nav-link" href="/staff/shipments/">
+            <i class="bi bi-truck"></i> Vận Chuyển
+          </a>
+          <a class="nav-link" href="/staff/customers/">
+            <i class="bi bi-people"></i> Khách Hàng
+          </a>
+          <a class="nav-link" href="/staff/reviews/">
+            <i class="bi bi-star"></i> Đánh Giá
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-white">
+        <i class="bi bi-box-seam-fill"></i> Quản Lý Sản Phẩm
+      </h2>
+      <button
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#productModal"
+        onclick="openAddModal()"
+      >
+        <i class="bi bi-plus-circle"></i> Thêm Sản Phẩm
+      </button>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm kiếm sản phẩm theo tên, tác giả, ISBN..."
+            />
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary w-100" onclick="searchProducts()">
+              <i class="bi bi-search"></i> Tìm kiếm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Ảnh</th>
+                <th>Tên Sản Phẩm</th>
+                <th>Tác Giả</th>
+                <th>ISBN</th>
+                <th>Giá</th>
+                <th>Tồn Kho</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr>
+                <td colspan="8" class="text-center">Đang tải...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Thêm Sản Phẩm</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="productForm">
+          <input type="hidden" id="productId" />
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <label class="form-label"
+                >Tên sản phẩm <span class="text-danger">*</span></label
+              >
+              <input type="text" class="form-control" id="title" required />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tác giả</label>
+              <input type="text" class="form-control" id="author" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">ISBN</label>
+              <input type="text" class="form-control" id="isbn" />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">Image URL</label>
+              <input
+                type="url"
+                class="form-control"
+                id="imageUrl"
+                placeholder="https://example.com/book-cover.jpg"
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Giá (VNĐ) <span class="text-danger">*</span></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="price"
+                min="0"
+                required
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label"
+                >Tồn kho <span class="text-danger">*</span></label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="stock"
+                min="0"
+                required
+              />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label class="form-label">Mô tả</label>
+              <textarea
+                class="form-control"
+                id="description"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+        <button type="button" class="btn btn-primary" onclick="saveProduct()">
+          <i class="bi bi-save"></i> Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allProducts = [];
+  let isEditMode = false;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadProducts();
+  });
+
+  async function loadProducts() {
+    try {
+      const res = await axios.get("/api/books/");
+      allProducts = res.data;
+      displayProducts(allProducts);
+    } catch (error) {
+      console.error("Error loading products:", error);
+      document.getElementById("productsTableBody").innerHTML = `
+        <tr><td colspan="8" class="text-center text-danger">Không thể tải danh sách sản phẩm</td></tr>
+        `;
+    }
+  }
+
+  function displayProducts(products) {
+    const tbody = document.getElementById("productsTableBody");
+
+    if (products.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="8" class="text-center">Không có sản phẩm nào</td></tr>';
+      return;
+    }
+
+    let html = "";
+    products.forEach((product) => {
+      const stockClass =
+        product.stock < 10
+          ? "text-danger"
+          : product.stock < 50
+            ? "text-warning"
+            : "text-success";
+
+      html += `
+            <tr>
+                <td>${product.id}</td>
+                <td>
+                  ${product.image_url ? `<img src="${product.image_url}" alt="${product.title}" style="width:42px;height:58px;object-fit:cover;border-radius:6px;">` : "N/A"}
+                </td>
+                <td>${product.title}</td>
+                <td>${product.author || "N/A"}</td>
+                <td>${product.isbn || "N/A"}</td>
+                <td>${parseFloat(product.price || 0).toLocaleString("vi-VN")}đ</td>
+                <td class="${stockClass}"><strong>${product.stock}</strong></td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editProduct(${product.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  function searchProducts() {
+    const searchTerm = document
+      .getElementById("searchInput")
+      .value.toLowerCase();
+    const filtered = allProducts.filter(
+      (p) =>
+        (p.title && p.title.toLowerCase().includes(searchTerm)) ||
+        (p.author && p.author.toLowerCase().includes(searchTerm)) ||
+        (p.isbn && p.isbn.toLowerCase().includes(searchTerm)),
+    );
+    displayProducts(filtered);
+  }
+
+  function openAddModal() {
+    isEditMode = false;
+    document.getElementById("modalTitle").textContent = "Thêm Sản Phẩm Mới";
+    document.getElementById("productForm").reset();
+    document.getElementById("productId").value = "";
+  }
+
+  async function editProduct(id) {
+    isEditMode = true;
+    try {
+      const res = await axios.get(`/api/books/${id}/`);
+      const product = res.data;
+
+      document.getElementById("modalTitle").textContent = "Chỉnh Sửa Sản Phẩm";
+      document.getElementById("productId").value = product.id;
+      document.getElementById("title").value = product.title;
+      document.getElementById("author").value = product.author || "";
+      document.getElementById("isbn").value = product.isbn || "";
+      document.getElementById("imageUrl").value = product.image_url || "";
+      document.getElementById("price").value = product.price;
+      document.getElementById("stock").value = product.stock;
+      document.getElementById("description").value = product.description || "";
+
+      const modal = new bootstrap.Modal(
+        document.getElementById("productModal"),
+      );
+      modal.show();
+    } catch (error) {
+      console.error("Error loading product:", error);
+      showAlert("Không thể tải thông tin sản phẩm", "danger");
+    }
+  }
+
+  async function saveProduct() {
+    const title = document.getElementById("title").value;
+    const price = document.getElementById("price").value;
+    const stock = document.getElementById("stock").value;
+
+    if (!title || !price || !stock) {
+      showAlert("Vui lòng điền đầy đủ thông tin bắt buộc", "warning");
+      return;
+    }
+
+    const data = {
+      title: title,
+      author: document.getElementById("author").value,
+      isbn: document.getElementById("isbn").value,
+      image_url: document.getElementById("imageUrl").value,
+      price: parseFloat(price),
+      stock: parseInt(stock),
+      description: document.getElementById("description").value,
+    };
+
+    try {
+      if (isEditMode) {
+        const id = document.getElementById("productId").value;
+        await axios.patch(`/api/books/${id}/`, data);
+        showAlert("Cập nhật sản phẩm thành công!", "success");
+      } else {
+        await axios.post("/api/books/", data);
+        showAlert("Thêm sản phẩm thành công!", "success");
+      }
+
+      bootstrap.Modal.getInstance(
+        document.getElementById("productModal"),
+      ).hide();
+      await loadProducts();
+    } catch (error) {
+      console.error("Error saving product:", error);
+      let errorMsg = "Không thể lưu sản phẩm";
+      if (error.response?.data) {
+        // Show detailed error from server
+        if (typeof error.response.data === "object") {
+          errorMsg += ": " + JSON.stringify(error.response.data);
+        } else {
+          errorMsg += ": " + error.response.data;
+        }
+      } else if (error.response?.status) {
+        errorMsg += " (HTTP " + error.response.status + ")";
+      }
+      showAlert(errorMsg, "danger");
+    }
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+
+    try {
+      await axios.delete(`/api/books/${id}/`);
+      showAlert("Đã xóa sản phẩm", "success");
+      await loadProducts();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      let errorMsg = "Không thể xóa sản phẩm";
+      if (error.response?.data?.error) {
+        errorMsg += ": " + error.response.data.error;
+      } else if (error.response?.status) {
+        errorMsg += " (HTTP " + error.response.status + ")";
+      }
+      showAlert(errorMsg, "danger");
+    }
+  }
+</script>
+{% endblock %}

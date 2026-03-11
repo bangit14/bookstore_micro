@@ -1,0 +1,150 @@
+{% extends 'layout_base.html' %} {% block title %}Dashboard Nhân Viên Kho -
+BookStore{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-box-seam text-warning"></i>
+          Nhân Viên Kho
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link active" href="/staff/warehouse/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/staff/warehouse/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/staff/warehouse/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+        </nav>
+        <hr />
+        <a href="/logout/" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-speedometer2"></i> Dashboard Nhân Viên Kho
+    </h2>
+    <p class="text-muted mb-4">
+      Xin chào, <strong class="text-white">{{ session_user.username }}</strong>!
+    </p>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-box text-info" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="productCount">--</h3>
+            <p class="text-muted small">Tổng sản phẩm</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i class="bi bi-truck text-primary" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="shipmentCount">--</h3>
+            <p class="text-muted small">Đơn đang vận chuyển</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <i
+              class="bi bi-exclamation-triangle text-danger"
+              style="font-size: 2.5rem"
+            ></i>
+            <h3 class="mt-2" id="lowStockCount">--</h3>
+            <p class="text-muted small">Sản phẩm sắp hết hàng</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipments needing action -->
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-truck"></i> Vận Chuyển Cần Xử Lý</h5>
+      </div>
+      <div class="card-body">
+        <div id="pendingShipments"><p class="text-muted">Đang tải...</p></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <a href="/staff/warehouse/products/" class="card text-decoration-none">
+          <div class="card-body text-center p-4">
+            <i class="bi bi-box-seam text-success" style="font-size: 2rem"></i>
+            <h6 class="mt-2">Quản Lý Sản Phẩm</h6>
+            <p class="text-muted small mb-0">Xem và cập nhật tồn kho</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-6 mb-3">
+        <a href="/staff/warehouse/shipments/" class="card text-decoration-none">
+          <div class="card-body text-center p-4">
+            <i class="bi bi-truck text-primary" style="font-size: 2rem"></i>
+            <h6 class="mt-2">Quản Lý Vận Chuyển</h6>
+            <p class="text-muted small mb-0">Theo dõi và cập nhật trạng thái</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", async function () {
+    try {
+      const [productsRes, shipmentsRes] = await Promise.all([
+        axios.get("/api/products/").catch(() => ({ data: [] })),
+        axios.get("/api/shipments/").catch(() => ({ data: [] })),
+      ]);
+
+      const products = productsRes.data || [];
+      const shipments = shipmentsRes.data || [];
+
+      document.getElementById("productCount").textContent = products.length;
+      document.getElementById("shipmentCount").textContent = shipments.filter(
+        (s) => s.status === "shipping",
+      ).length;
+      document.getElementById("lowStockCount").textContent = products.filter(
+        (p) => (p.stock || 0) < 5,
+      ).length;
+
+      const pending = shipments.filter(
+        (s) => s.status === "pending" || s.status === "processing",
+      );
+      if (pending.length === 0) {
+        document.getElementById("pendingShipments").innerHTML =
+          '<p class="text-muted">Không có vận chuyển nào cần xử lý.</p>';
+      } else {
+        document.getElementById("pendingShipments").innerHTML = pending
+          .slice(0, 5)
+          .map(
+            (s) => `
+          <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+            <span><strong>#${s.id}</strong> - Đơn hàng #${s.order_id}</span>
+            <span class="badge bg-warning">${s.status}</span>
+          </div>`,
+          )
+          .join("");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+</script>
+{% endblock %}

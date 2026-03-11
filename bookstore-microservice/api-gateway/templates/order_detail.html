@@ -1,0 +1,68 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <div style="margin-bottom: 1rem">
+    <a
+      href="{% url 'order_list' %}"
+      style="text-decoration: none; color: #667eea"
+      >← Quay lại danh sách đơn hàng</a
+    >
+  </div>
+
+  <article class="card">
+    <h2>Chi Tiết Đơn Hàng #{{ order_id }}</h2>
+    <p><strong>Mã đơn hàng:</strong> {{ order_id }}</p>
+
+    <h3 style="margin-top: 2rem">Thông Tin Thanh Toán</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Mã thanh toán</th>
+          <th>Số tiền</th>
+          <th>Trạng thái</th>
+          <th>Mã giao dịch</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>${{ p.amount }}</td>
+          <td>{{ p.status }}</td>
+          <td>{{ p.transaction_id }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">Không tìm thấy bản ghi thanh toán.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 style="margin-top: 2rem">Thông Tin Vận Chuyển</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Mã vận chuyển</th>
+          <th>Địa chỉ</th>
+          <th>Trạng thái</th>
+          <th>Mã theo dõi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in shipments %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.shipping_address }}</td>
+          <td>{{ s.status }}</td>
+          <td>{{ s.tracking_code }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">Không tìm thấy bản ghi vận chuyển.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

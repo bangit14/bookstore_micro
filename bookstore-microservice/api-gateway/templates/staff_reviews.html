@@ -1,0 +1,230 @@
+{% extends 'layout_base.html' %} {% block title %}Kiểm Duyệt Đánh Giá - Nhân
+Viên{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-person-badge text-success"></i> Menu Nhân Viên
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="/staff/dashboard/"
+            ><i class="bi bi-speedometer2"></i> Dashboard</a
+          >
+          <a class="nav-link" href="/staff/products/"
+            ><i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm</a
+          >
+          <a class="nav-link" href="/staff/inventory/"
+            ><i class="bi bi-boxes"></i> Quản Lý Tồn Kho</a
+          >
+          <a class="nav-link" href="/staff/orders/"
+            ><i class="bi bi-receipt"></i> Xử Lý Đơn Hàng</a
+          >
+          <a class="nav-link" href="/staff/shipments/"
+            ><i class="bi bi-truck"></i> Hỗ Trợ Vận Chuyển</a
+          >
+          <a class="nav-link" href="/staff/customers/"
+            ><i class="bi bi-people"></i> Hỗ Trợ Khách Hàng</a
+          >
+          <a class="nav-link active" href="/staff/reviews/"
+            ><i class="bi bi-star"></i> Kiểm Duyệt Đánh Giá</a
+          >
+        </nav>
+        <hr />
+        <a href="/logout/" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-star"></i> Kiểm Duyệt Đánh Giá
+    </h2>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-2">
+            <select
+              id="ratingFilter"
+              class="form-select"
+              onchange="filterReviews()"
+            >
+              <option value="all">Tất cả số sao</option>
+              <option value="1">1 sao</option>
+              <option value="2">2 sao</option>
+              <option value="3">3 sao</option>
+              <option value="4">4 sao</option>
+              <option value="5">5 sao</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-2">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Tìm theo nội dung đánh giá..."
+              oninput="filterReviews()"
+            />
+          </div>
+          <div class="col-md-2 mb-2">
+            <button class="btn btn-primary w-100" onclick="loadReviews()">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div id="reviewsList">
+      <div class="text-center text-white">Đang tải...</div>
+    </div>
+    <div class="text-center mt-3">
+      <button
+        id="loadMoreBtn"
+        class="btn btn-outline-light"
+        onclick="loadMore()"
+        style="display: none"
+      >
+        Xem thêm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Xác Nhận Xóa Đánh Giá</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        Bạn có chắc muốn xóa đánh giá này không? Hành động này không thể hoàn
+        tác.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+        <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+          <i class="bi bi-trash"></i> Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  let allReviews = [];
+  let displayedCount = 10;
+  let deleteTargetId = null;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadReviews();
+  });
+
+  async function loadReviews() {
+    try {
+      const res = await axios.get("/api/reviews/");
+      allReviews = res.data || [];
+      displayedCount = 10;
+      filterReviews();
+    } catch (e) {
+      document.getElementById("reviewsList").innerHTML =
+        '<div class="alert alert-danger">Không thể tải đánh giá</div>';
+    }
+  }
+
+  function filterReviews() {
+    const rating = document.getElementById("ratingFilter").value;
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    let filtered = allReviews;
+    if (rating !== "all")
+      filtered = filtered.filter((r) => r.rating?.toString() === rating);
+    if (search)
+      filtered = filtered.filter((r) =>
+        (r.comment || r.content || "").toLowerCase().includes(search),
+      );
+    displayReviews(filtered);
+  }
+
+  function stars(rating) {
+    return Array.from(
+      { length: 5 },
+      (_, i) =>
+        `<i class="bi bi-star${i < rating ? "-fill" : ""} text-warning"></i>`,
+    ).join("");
+  }
+
+  function displayReviews(reviews) {
+    const list = document.getElementById("reviewsList");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    if (!reviews.length) {
+      list.innerHTML =
+        '<div class="alert alert-info">Không có đánh giá nào</div>';
+      loadMoreBtn.style.display = "none";
+      return;
+    }
+    const visible = reviews.slice(0, displayedCount);
+    list.innerHTML = visible
+      .map(
+        (r) => `
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="mb-1">${stars(r.rating || 0)}</div>
+              <p class="mb-1">${r.comment || r.content || "(Không có nội dung)"}</p>
+              <small class="text-muted">
+                Khách #${r.customer_id || "N/A"} &bull; Sách #${r.book_id || r.product_id || "N/A"}
+                &bull; ${r.created_at ? new Date(r.created_at).toLocaleDateString("vi-VN") : "N/A"}
+              </small>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="requestDelete(${r.id})">
+              <i class="bi bi-trash"></i> Xóa
+            </button>
+          </div>
+        </div>
+      </div>`,
+      )
+      .join("");
+    loadMoreBtn.style.display =
+      reviews.length > displayedCount ? "inline-block" : "none";
+  }
+
+  function loadMore() {
+    displayedCount += 10;
+    filterReviews();
+  }
+
+  function requestDelete(id) {
+    deleteTargetId = id;
+    new bootstrap.Modal(document.getElementById("deleteModal")).show();
+  }
+
+  async function confirmDelete() {
+    if (!deleteTargetId) return;
+    try {
+      await axios.delete(`/api/reviews/${deleteTargetId}/`);
+      bootstrap.Modal.getInstance(
+        document.getElementById("deleteModal"),
+      ).hide();
+      await loadReviews();
+    } catch (e) {
+      alert("Lỗi xóa: " + (e.response?.data?.detail || e.message));
+    }
+  }
+</script>
+{% endblock %}

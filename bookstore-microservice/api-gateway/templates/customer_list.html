@@ -1,0 +1,50 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      "
+    >
+      <h2>Danh Sách Khách Hàng</h2>
+      <a
+        href="{% url 'customer_create' %}"
+        class="btn-primary"
+        style="
+          text-decoration: none;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 8px;
+        "
+        >+ Thêm Khách Hàng</a
+      >
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.email }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">Không tìm thấy khách hàng nào.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

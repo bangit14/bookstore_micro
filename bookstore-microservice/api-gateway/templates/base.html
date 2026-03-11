@@ -232,25 +232,25 @@
     <div class="shell">
       <header class="topbar">
         <h1 class="brand">
-          BookStore Mesh
-          <small>Microservice Web Console</small>
+          Hệ Thống Nhà Sách
+          <small>Bảng Điều Khiển Vi Dịch Vụ</small>
         </h1>
         <nav class="nav">
-          <a href="/">Dashboard</a>
-          <a href="/books/">Books</a>
-          <a href="/catalog/">Catalog</a>
-          <a href="/cart/">Cart</a>
-          <a href="/orders/">Orders</a>
-          <a href="/reviews/">Reviews</a>
-          <a href="/customers/">Customers</a>
-          <a href="/staff/">Staff</a>
-          <a href="/recommender/">AI Recommender</a>
-          <a href="/manager-dashboard/">Manager</a>
+          <a href="{% url 'home' %}">Trang Chủ</a>
+          <a href="{% url 'book_list' %}">Sách</a>
+          <a href="{% url 'catalog_list' %}">Danh Mục</a>
+          <a href="{% url 'cart_view' %}">Giỏ Hàng</a>
+          <a href="{% url 'order_list' %}">Đơn Hàng</a>
+          <a href="{% url 'review_list' %}">Đánh Giá</a>
+          <a href="{% url 'customer_list' %}">Khách Hàng</a>
+          <a href="{% url 'staff_list' %}">Nhân Viên</a>
+          <a href="{% url 'recommender' %}">Gợi Ý AI</a>
+          <a href="{% url 'manager-dashboard' %}">Quản Lý</a>
           {% if session_user and session_user.is_authenticated %}
-          <a href="/logout/">Logout</a>
+          <a href="{% url 'logout' %}">Đăng Xuất</a>
           {% else %}
-          <a href="/login/">Login</a>
-          <a href="/register/">Register</a>
+          <a href="{% url 'login' %}">Đăng Nhập</a>
+          <a href="{% url 'register' %}">Đăng Ký</a>
           {% endif %}
         </nav>
       </header>

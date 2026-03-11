@@ -5,9 +5,37 @@ from .models import Customer, UserProfile
 
 
 class CustomerSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source="name", required=False)
+    username = serializers.SerializerMethodField()
+
     class Meta:
         model = Customer
-        fields = "__all__"
+        fields = ["id", "name", "full_name", "email", "phone", "address", "username"]
+        extra_kwargs = {"name": {"required": False}}
+
+    def get_username(self, obj):
+        profile = getattr(obj, "userprofile", None)
+        if profile and profile.user:
+            return profile.user.username
+        return None
+
+    def update(self, instance, validated_data):
+        # Allow updating via full_name (mapped to name)
+        if "name" in validated_data:
+            instance.name = validated_data["name"]
+        if "email" in validated_data:
+            instance.email = validated_data["email"]
+        if "phone" in validated_data:
+            instance.phone = validated_data["phone"]
+        if "address" in validated_data:
+            instance.address = validated_data["address"]
+        instance.save()
+        return instance
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, min_length=6)
 
 
 class RegisterSerializer(serializers.Serializer):

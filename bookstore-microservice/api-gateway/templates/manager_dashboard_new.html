@@ -1,0 +1,361 @@
+{% extends 'layout_base.html' %} {% block title %}Manager Dashboard -
+BookStore{% endblock %} {% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">
+          <i class="bi bi-shield-check text-danger"></i>
+          Menu Quản Lý
+        </h5>
+        <nav class="nav flex-column">
+          <a class="nav-link active" href="/manager/dashboard/">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a class="nav-link" href="/manager/staff/">
+            <i class="bi bi-people"></i> Quản Lý Nhân Viên
+          </a>
+          <a class="nav-link" href="/manager/products/">
+            <i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm
+          </a>
+          <a class="nav-link" href="/manager/orders/">
+            <i class="bi bi-receipt"></i> Quản Lý Đơn Hàng
+          </a>
+          <a class="nav-link" href="/manager/payments/">
+            <i class="bi bi-credit-card"></i> Quản Lý Thanh Toán
+          </a>
+          <a class="nav-link" href="/manager/shipments/">
+            <i class="bi bi-truck"></i> Quản Lý Vận Chuyển
+          </a>
+          <a class="nav-link" href="/manager/reviews/">
+            <i class="bi bi-star"></i> Quản Lý Đánh Giá
+          </a>
+          <a class="nav-link" href="/manager/reports/">
+            <i class="bi bi-graph-up"></i> Thống Kê & Báo Cáo
+          </a>
+          <a class="nav-link" href="/manager/system/">
+            <i class="bi bi-gear"></i> Quản Lý Hệ Thống
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2 class="text-white mb-4">
+      <i class="bi bi-speedometer2"></i> Dashboard Quản Lý
+    </h2>
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <i
+              class="bi bi-people-fill text-primary"
+              style="font-size: 2.5rem"
+            ></i>
+            <h3 class="mt-2" id="staffCount">0</h3>
+            <p class="text-muted small mb-0">Nhân viên</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <i class="bi bi-box-fill text-info" style="font-size: 2.5rem"></i>
+            <h3 class="mt-2" id="productCount">0</h3>
+            <p class="text-muted small mb-0">Sản phẩm</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-warning">
+          <div class="card-body">
+            <i
+              class="bi bi-receipt-fill text-warning"
+              style="font-size: 2.5rem"
+            ></i>
+            <h3 class="mt-2" id="orderCount">0</h3>
+            <p class="text-muted small mb-0">Đơn hàng</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <i
+              class="bi bi-cash-coin text-success"
+              style="font-size: 2.5rem"
+            ></i>
+            <h3 class="mt-2" id="revenue">0đ</h3>
+            <p class="text-muted small mb-0">Doanh thu</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+          <i class="bi bi-hdd-network"></i> Trạng Thái Hệ Thống
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="systemStatus" class="row">
+          <p class="text-muted">Đang kiểm tra...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+          <i class="bi bi-graph-up-arrow"></i> Thống Kê Doanh Thu
+        </h5>
+      </div>
+      <div class="card-body">
+        <canvas id="revenueChart" height="80"></canvas>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Recent Orders -->
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+              <i class="bi bi-clock-history"></i> Đơn Hàng Mới
+            </h5>
+          </div>
+          <div class="card-body">
+            <div id="recentOrders">
+              <p class="text-muted">Đang tải...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Products -->
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-trophy"></i> Sản Phẩm Bán Chạy</h5>
+          </div>
+          <div class="card-body">
+            <div id="topProducts">
+              <p class="text-muted">Đang tải...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async function () {
+    // Load Dashboard Data from manager-service via API Gateway
+    try {
+      const dashRes = await axios.get("/api/manager/dashboard/");
+
+      document.getElementById("staffCount").textContent =
+        dashRes.data.staff_count || 0;
+      document.getElementById("productCount").textContent =
+        dashRes.data.catalog_product_count || 0;
+      document.getElementById("orderCount").textContent =
+        dashRes.data.order_count || 0;
+      document.getElementById("reviewCount").textContent =
+        dashRes.data.review_count || 0;
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    }
+
+    // Check system status
+    checkSystemStatus();
+
+    // Load payments for revenue
+    try {
+      const paymentsRes = await axios.get("/api/payments/");
+      const totalRevenue = paymentsRes.data
+        .filter((p) => p.status === "success")
+        .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+
+      document.getElementById("revenue").textContent =
+        Math.round(totalRevenue).toLocaleString("vi-VN") + "đ";
+
+      // Create revenue chart
+      createRevenueChart(paymentsRes.data);
+    } catch (error) {
+      console.error("Error loading revenue:", error);
+    }
+
+    // Load recent orders
+    try {
+      const ordersRes = await axios.get("/api/orders/");
+      const recentOrders = ordersRes.data.slice(0, 5);
+
+      let html = '<div class="list-group">';
+      recentOrders.forEach((order) => {
+        const statusColor =
+          {
+            pending: "warning",
+            paid: "info",
+            shipping: "primary",
+            delivered: "success",
+            cancelled: "danger",
+          }[order.status] || "secondary";
+
+        html += `
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <h6>#${order.id}</h6>
+                        <span class="badge bg-${statusColor}">${order.status}</span>
+                    </div>
+                    <p class="mb-0 small text-muted">
+                        KH #${order.customer_id} - ${parseInt(order.total_amount || 0).toLocaleString("vi-VN")}đ
+                    </p>
+                </div>
+            `;
+      });
+      html += "</div>";
+      document.getElementById("recentOrders").innerHTML = html;
+    } catch (error) {
+      console.error("Error loading orders:", error);
+    }
+
+    // Load top products
+    try {
+      const booksRes = await axios.get("/api/books/");
+      const topBooks = booksRes.data
+        .sort((a, b) => b.stock - a.stock)
+        .slice(0, 5);
+
+      let html = '<div class="list-group">';
+      topBooks.forEach((book, index) => {
+        html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-primary rounded-pill me-2">${index + 1}</span>
+                        ${book.title}
+                    </div>
+                    <span class="badge bg-success">${book.stock} bán</span>
+                </div>
+            `;
+      });
+      html += "</div>";
+      document.getElementById("topProducts").innerHTML = html;
+    } catch (error) {
+      console.error("Error loading top products:", error);
+    }
+  });
+
+  async function checkSystemStatus() {
+    const services = [
+      { name: "Book Service", url: "/api/books/", port: 8002 },
+      { name: "Cart Service", url: "/api/carts/", port: 8003 },
+      {
+        name: "Catalog Service",
+        url: "/api/products/",
+        port: 8006,
+      },
+      {
+        name: "Order Service",
+        url: "/api/orders/",
+        port: 8007,
+      },
+      {
+        name: "Ship Service",
+        url: "/api/shipments/",
+        port: 8008,
+      },
+      {
+        name: "Pay Service",
+        url: "/api/payments/",
+        port: 8009,
+      },
+    ];
+
+    let html = "";
+    for (const service of services) {
+      try {
+        await axios.get(service.url, { timeout: 2000 });
+        html += `
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span>${service.name}</span>
+                        <span class="badge bg-success ms-auto">Online</span>
+                    </div>
+                </div>
+            `;
+      } catch (error) {
+        html += `
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                        <span>${service.name}</span>
+                        <span class="badge bg-danger ms-auto">Offline</span>
+                    </div>
+                </div>
+            `;
+      }
+    }
+
+    document.getElementById("systemStatus").innerHTML = html;
+  }
+
+  function createRevenueChart(payments) {
+    const ctx = document.getElementById("revenueChart").getContext("2d");
+
+    // Group by day
+    const dailyRevenue = {};
+    payments
+      .filter((p) => p.status === "success")
+      .forEach((payment) => {
+        const date = new Date(
+          payment.created_at || Date.now(),
+        ).toLocaleDateString("vi-VN");
+        dailyRevenue[date] =
+          (dailyRevenue[date] || 0) + parseFloat(payment.amount || 0);
+      });
+
+    const labels = Object.keys(dailyRevenue).slice(-7);
+    const data = labels.map((date) => dailyRevenue[date]);
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Doanh thu (VNĐ)",
+            data: data,
+            borderColor: "rgb(75, 192, 192)",
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            tension: 0.1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+</script>
+{% endblock %}

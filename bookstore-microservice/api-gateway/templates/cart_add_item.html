@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Thêm Sản Phẩm Vào Giỏ</h2>
+    <form method="post" class="stack">
+      {% csrf_token %}
+      <div>
+        <label for="add-item-cart-id">Mã giỏ hàng</label>
+        <input id="add-item-cart-id" type="number" name="cart" required />
+      </div>
+      <div>
+        <label for="add-item-book-id">Sách</label>
+        <select id="add-item-book-id" name="book_id" required>
+          <option value="">-- Chọn sách --</option>
+          {% for b in books %}
+          <option value="{{ b.id }}">#{{ b.id }} - {{ b.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="add-item-quantity">Số lượng</label>
+        <input
+          id="add-item-quantity"
+          type="number"
+          name="quantity"
+          min="1"
+          value="1"
+          required
+        />
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Thêm Vào Giỏ</button>
+        <a
+          href="{% url 'cart_view' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+    <p class="hint" style="margin-top: 16px">
+      Lưu ý: Bạn cần biết mã giỏ hàng của mình. Nếu bạn chưa có giỏ hàng, vui
+      lòng liên hệ hỗ trợ.
+    </p>
+  </article>
+</section>
+{% endblock %}

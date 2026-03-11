@@ -1,0 +1,65 @@
+{% extends "base.html" %} {% block content %}
+<section>
+  <article class="card" style="max-width: 600px; margin: 0 auto">
+    <h2>Viết Đánh Giá</h2>
+    <form method="post" class="stack">
+      {% csrf_token %} {% if session_user.role != "customer" %}
+      <div>
+        <label for="review-customer-id">Mã khách hàng</label>
+        <input
+          id="review-customer-id"
+          type="number"
+          name="customer_id"
+          required
+        />
+      </div>
+      {% endif %}
+      <div>
+        <label for="review-product-id">Mã sản phẩm</label>
+        <input
+          id="review-product-id"
+          type="number"
+          name="product_id"
+          required
+        />
+      </div>
+      <div>
+        <label for="review-rating">Điểm đánh giá</label>
+        <input
+          id="review-rating"
+          type="number"
+          name="rating"
+          min="1"
+          max="5"
+          value="5"
+          required
+        />
+      </div>
+      <div>
+        <label for="review-comment">Bình luận</label>
+        <textarea
+          id="review-comment"
+          name="comment"
+          rows="4"
+          required
+        ></textarea>
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button type="submit">Gửi Đánh Giá</button>
+        <a
+          href="{% url 'review_list' %}"
+          style="
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            display: inline-block;
+          "
+          >Hủy</a
+        >
+      </div>
+    </form>
+  </article>
+</section>
+{% endblock %}
