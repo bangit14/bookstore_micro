@@ -110,7 +110,7 @@ BookStore{% endblock %} {% block content %}
 
       try {
           // Load cart count
-          const cartRes = await axios.get(`/api/carts/${customerId}/`);
+          const cartRes = await axios.get(`/api/carts/customer/${customerId}/`);
           document.getElementById('cartCount').textContent = cartRes.data.length || 0;
       } catch (error) {
           console.error('Error loading cart:', error);
@@ -202,7 +202,7 @@ BookStore{% endblock %} {% block content %}
       const customerId = {{ customer_id|default:1 }};
       try {
           // Get cart first
-          const cartRes = await axios.get(`/api/carts/${customerId}/`);
+          const cartRes = await axios.get(`/api/carts/customer/${customerId}/`);
           // Add item logic here
           showAlert('Đã thêm vào giỏ hàng!', 'success');
       } catch (error) {

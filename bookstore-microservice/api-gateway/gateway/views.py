@@ -1362,6 +1362,25 @@ def api_carts(request, cart_id=None):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
 
+def api_cart_by_customer(request, customer_id):
+    """Proxy to get/create cart by customer_id"""
+    if not request.session.get("access_token"):
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+    
+    headers = _auth_headers(request)
+    try:
+        if request.method == "GET":
+            resp = requests.get(f"{CART_SERVICE_URL}/carts/customer/{customer_id}/", headers=headers, timeout=5)
+        else:
+            return JsonResponse({"error": "Method not allowed"}, status=405)
+        
+        return JsonResponse(resp.json(), safe=False, status=resp.status_code)
+    except requests.RequestException as e:
+        return JsonResponse({"error": "Cart service unavailable", "detail": str(e)}, status=503)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON response"}, status=500)
+
+
 def api_cart_items(request, item_id=None):
     """Proxy for cart-service cart-items API"""
     if not request.session.get("access_token"):

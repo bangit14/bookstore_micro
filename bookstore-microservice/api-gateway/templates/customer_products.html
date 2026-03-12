@@ -296,7 +296,7 @@
           // Get or create cart
           let cartRes;
           try {
-              cartRes = await axios.get(`/api/carts/${customerId}/`);
+              cartRes = await axios.get(`/api/carts/customer/${customerId}/`);
           } catch (error) {
               // Create cart if not exists
               cartRes = await axios.post('/api/carts/', {

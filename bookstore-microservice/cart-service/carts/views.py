@@ -45,6 +45,47 @@ class CartByCustomer(APIView):
         return Response(serializer.data)
 
 
+class CartDetail(APIView):
+    """
+    Retrieve, update or delete a cart instance by cart_id.
+    PUT/PATCH: Update cart (e.g., customer_id)
+    DELETE: Delete cart and all its items
+    """
+    permission_classes = [IsManagerStaffOrCustomer]
+
+    def get_object(self, cart_id):
+        return get_object_or_404(Cart, pk=cart_id)
+
+    def get(self, request, cart_id):
+        cart = self.get_object(cart_id)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+
+    def put(self, request, cart_id):
+        """Full update of cart"""
+        cart = self.get_object(cart_id)
+        serializer = CartSerializer(cart, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, cart_id):
+        """Partial update of cart"""
+        cart = self.get_object(cart_id)
+        serializer = CartSerializer(cart, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, cart_id):
+        """Delete cart and all associated cart items"""
+        cart = self.get_object(cart_id)
+        cart.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class CartItemListCreate(APIView):
     permission_classes = [IsManagerStaffOrCustomer]
 

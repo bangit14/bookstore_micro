@@ -195,7 +195,7 @@
   async function loadCart() {
       try {
           const customerId = {{ request.session.customer_id|default:1 }};
-          const cartRes = await axios.get(`/api/carts/${customerId}/`);
+          const cartRes = await axios.get(`/api/carts/customer/${customerId}/`);
           cartData = cartRes.data;
 
           // Load cart items
