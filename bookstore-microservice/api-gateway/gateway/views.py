@@ -1180,7 +1180,8 @@ def api_manager_dashboard(request):
 
 def api_books(request, book_id=None):
     """Proxy for book-service books API - supports GET, POST, PUT, PATCH, DELETE"""
-    if not request.session.get("access_token"):
+    # Allow unauthenticated GET for public book listing (landing page, product pages)
+    if request.method != "GET" and not request.session.get("access_token"):
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
     headers = _auth_headers(request)
